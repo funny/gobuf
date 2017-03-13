@@ -1,13 +1,23 @@
-Encoding
-========
 
-| Format | Types |
+Scalar Types
+====
+
+| Type | Encoding |
 | --- | --- |
-| 8bit | byte |
-| 16bit LE | int16, uint16 |
-| 32bit LE | int32, uint32, float32 |
-| 64bit LE | int64, uint64, float64 |
-| varint | int |
-| uvarint | uint |
-| uvarint + body | string, []byte, []xxx |
-| 1bit + body | *xxx |
+| int | varint |
+| uint | uvarint |
+| byte, int8, uint8 | 1byte |
+| int16, uint16 | 2byte little-endian |
+| int32, uint32 | 4byte little-endian |
+| int64, uint64 | 8byte little-endian |
+
+Composite Types
+=====
+
+| Type | Encoding |
+| --- | --- |
+| string, []byte | uvarint(length) + length |
+| []{Scalar} | uvarint(count) + count * {Scalar} |
+| []{Message} | uvarint(count) + foreach(content) |
+| *{Scalar} | byte(0) / byte(1) + {Scalar} |
+| *{Message} | byte(0) / byte(1) + {Message} |
