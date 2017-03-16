@@ -162,32 +162,65 @@ func (msg *CompositeTypes) Size() int {
 	if msg.StringPtr != nil {
 		size += gobuf.UvarintSize(uint64(len(*msg.StringPtr))) + len(*msg.StringPtr)
 	}
-	for i := 0; i < len(msg.IntArray); i++ {
-		size += gobuf.VarintSize(int64(msg.IntArray[i]))
+	gobuf.UvarintSize(uint64(len(msg.IntArray)))
+	for i1 := 0; i1 < len(msg.IntArray); i1++ {
+		size += gobuf.VarintSize(int64(msg.IntArray[i1]))
 	}
-	for i := 0; i < len(msg.UintArray); i++ {
-		size += gobuf.UvarintSize(uint64(msg.UintArray[i]))
+	gobuf.UvarintSize(uint64(len(msg.UintArray)))
+	for i1 := 0; i1 < len(msg.UintArray); i1++ {
+		size += gobuf.UvarintSize(uint64(msg.UintArray[i1]))
 	}
-	size += 1 * len(msg.Int8Array)
+	size += gobuf.UvarintSize(uint64(len(msg.Int8Array))) + len(msg.Int8Array)*1
 	size += gobuf.UvarintSize(uint64(len(msg.Uint8Array))) + len(msg.Uint8Array)
-	size += 2 * len(msg.Int16Array)
-	size += 2 * len(msg.Uint16Array)
-	size += 4 * len(msg.Int32Array)
-	size += 4 * len(msg.Uint32Array)
-	size += 8 * len(msg.Int64Array)
-	size += 8 * len(msg.Uint64Array)
-	size += 4 * len(msg.Float32Array)
-	size += 8 * len(msg.Float64Array)
-	for i := 0; i < len(msg.StringArray); i++ {
-		size += gobuf.UvarintSize(uint64(len(msg.StringArray[i]))) + len(msg.StringArray[i])
+	size += gobuf.UvarintSize(uint64(len(msg.Int16Array))) + len(msg.Int16Array)*2
+	size += gobuf.UvarintSize(uint64(len(msg.Uint16Array))) + len(msg.Uint16Array)*2
+	size += gobuf.UvarintSize(uint64(len(msg.Int32Array))) + len(msg.Int32Array)*4
+	size += gobuf.UvarintSize(uint64(len(msg.Uint32Array))) + len(msg.Uint32Array)*4
+	size += gobuf.UvarintSize(uint64(len(msg.Int64Array))) + len(msg.Int64Array)*8
+	size += gobuf.UvarintSize(uint64(len(msg.Uint64Array))) + len(msg.Uint64Array)*8
+	size += gobuf.UvarintSize(uint64(len(msg.Float32Array))) + len(msg.Float32Array)*4
+	size += gobuf.UvarintSize(uint64(len(msg.Float64Array))) + len(msg.Float64Array)*8
+	gobuf.UvarintSize(uint64(len(msg.StringArray)))
+	for i1 := 0; i1 < len(msg.StringArray); i1++ {
+		size += gobuf.UvarintSize(uint64(len(msg.StringArray[i1]))) + len(msg.StringArray[i1])
 	}
 	size += msg.Message.Size()
 	size += 1
 	if msg.MessagePtr != nil {
 		size += msg.MessagePtr.Size()
 	}
-	for i := 0; i < len(msg.MessageArray); i++ {
-		size += msg.MessageArray[i].Size()
+	gobuf.UvarintSize(uint64(len(msg.MessageArray)))
+	for i1 := 0; i1 < len(msg.MessageArray); i1++ {
+		size += msg.MessageArray[i1].Size()
+	}
+	gobuf.UvarintSize(uint64(len(msg.MessagePtrArray)))
+	for i1 := 0; i1 < len(msg.MessagePtrArray); i1++ {
+		size += 1
+		if msg.MessagePtrArray[i1] != nil {
+			size += msg.MessagePtrArray[i1].Size()
+		}
+	}
+	gobuf.UvarintSize(uint64(len(msg.MessageArrayArray)))
+	for i1 := 0; i1 < len(msg.MessageArrayArray); i1++ {
+		gobuf.UvarintSize(uint64(len(msg.MessageArrayArray[i1])))
+		for i2 := 0; i2 < len(msg.MessageArrayArray[i1]); i2++ {
+			size += msg.MessageArrayArray[i1][i2].Size()
+		}
+	}
+	size += gobuf.UvarintSize(uint64(len(msg.IntMap)))
+	for key1, val1 := range msg.IntMap {
+		size += gobuf.VarintSize(int64(key1))
+		size += gobuf.UvarintSize(uint64(len(val1)))
+		for key2, val2 := range val1 {
+			size += gobuf.VarintSize(int64(key2))
+			gobuf.UvarintSize(uint64(len(val2)))
+			for i3 := 0; i3 < len(val2); i3++ {
+				size += 1
+				if val2[i3] != nil {
+					size += val2[i3].Size()
+				}
+			}
+		}
 	}
 	return size
 }
@@ -311,66 +344,66 @@ func (msg *CompositeTypes) Marshal(b []byte) int {
 		n++
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.IntArray)))
-	for i := 0; i < len(msg.IntArray); i++ {
-		n += binary.PutVarint(b[n:], int64(msg.IntArray[i]))
+	for i1 := 0; i1 < len(msg.IntArray); i1++ {
+		n += binary.PutVarint(b[n:], int64(msg.IntArray[i1]))
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.UintArray)))
-	for i := 0; i < len(msg.UintArray); i++ {
-		n += binary.PutUvarint(b[n:], uint64(msg.UintArray[i]))
+	for i1 := 0; i1 < len(msg.UintArray); i1++ {
+		n += binary.PutUvarint(b[n:], uint64(msg.UintArray[i1]))
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Int8Array)))
-	for i := 0; i < len(msg.Int8Array); i++ {
-		b[n] = byte(msg.Int8Array[i])
+	for i1 := 0; i1 < len(msg.Int8Array); i1++ {
+		b[n] = byte(msg.Int8Array[i1])
 		n += 1
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Uint8Array)))
 	copy(b[n:], msg.Uint8Array)
 	n += len(msg.Uint8Array)
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Int16Array)))
-	for i := 0; i < len(msg.Int16Array); i++ {
-		binary.LittleEndian.PutUint16(b[n:], uint16(msg.Int16Array[i]))
+	for i1 := 0; i1 < len(msg.Int16Array); i1++ {
+		binary.LittleEndian.PutUint16(b[n:], uint16(msg.Int16Array[i1]))
 		n += 2
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Uint16Array)))
-	for i := 0; i < len(msg.Uint16Array); i++ {
-		binary.LittleEndian.PutUint16(b[n:], uint16(msg.Uint16Array[i]))
+	for i1 := 0; i1 < len(msg.Uint16Array); i1++ {
+		binary.LittleEndian.PutUint16(b[n:], uint16(msg.Uint16Array[i1]))
 		n += 2
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Int32Array)))
-	for i := 0; i < len(msg.Int32Array); i++ {
-		binary.LittleEndian.PutUint32(b[n:], uint32(msg.Int32Array[i]))
+	for i1 := 0; i1 < len(msg.Int32Array); i1++ {
+		binary.LittleEndian.PutUint32(b[n:], uint32(msg.Int32Array[i1]))
 		n += 4
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Uint32Array)))
-	for i := 0; i < len(msg.Uint32Array); i++ {
-		binary.LittleEndian.PutUint32(b[n:], uint32(msg.Uint32Array[i]))
+	for i1 := 0; i1 < len(msg.Uint32Array); i1++ {
+		binary.LittleEndian.PutUint32(b[n:], uint32(msg.Uint32Array[i1]))
 		n += 4
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Int64Array)))
-	for i := 0; i < len(msg.Int64Array); i++ {
-		binary.LittleEndian.PutUint64(b[n:], uint64(msg.Int64Array[i]))
+	for i1 := 0; i1 < len(msg.Int64Array); i1++ {
+		binary.LittleEndian.PutUint64(b[n:], uint64(msg.Int64Array[i1]))
 		n += 8
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Uint64Array)))
-	for i := 0; i < len(msg.Uint64Array); i++ {
-		binary.LittleEndian.PutUint64(b[n:], uint64(msg.Uint64Array[i]))
+	for i1 := 0; i1 < len(msg.Uint64Array); i1++ {
+		binary.LittleEndian.PutUint64(b[n:], uint64(msg.Uint64Array[i1]))
 		n += 8
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Float32Array)))
-	for i := 0; i < len(msg.Float32Array); i++ {
-		gobuf.PutFloat32(b[n:], float32(msg.Float32Array[i]))
+	for i1 := 0; i1 < len(msg.Float32Array); i1++ {
+		gobuf.PutFloat32(b[n:], float32(msg.Float32Array[i1]))
 		n += 4
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.Float64Array)))
-	for i := 0; i < len(msg.Float64Array); i++ {
-		gobuf.PutFloat64(b[n:], float64(msg.Float64Array[i]))
+	for i1 := 0; i1 < len(msg.Float64Array); i1++ {
+		gobuf.PutFloat64(b[n:], float64(msg.Float64Array[i1]))
 		n += 8
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.StringArray)))
-	for i := 0; i < len(msg.StringArray); i++ {
-		n += binary.PutUvarint(b[n:], uint64(len(msg.StringArray[i])))
-		copy(b[n:], msg.StringArray[i])
-		n += len(msg.StringArray[i])
+	for i1 := 0; i1 < len(msg.StringArray); i1++ {
+		n += binary.PutUvarint(b[n:], uint64(len(msg.StringArray[i1])))
+		copy(b[n:], msg.StringArray[i1])
+		n += len(msg.StringArray[i1])
 	}
 	n += msg.Message.Marshal(b[n:])
 	if msg.MessagePtr != nil {
@@ -382,8 +415,45 @@ func (msg *CompositeTypes) Marshal(b []byte) int {
 		n++
 	}
 	n += binary.PutUvarint(b[n:], uint64(len(msg.MessageArray)))
-	for i := 0; i < len(msg.MessageArray); i++ {
-		n += msg.MessageArray[i].Marshal(b[n:])
+	for i1 := 0; i1 < len(msg.MessageArray); i1++ {
+		n += msg.MessageArray[i1].Marshal(b[n:])
+	}
+	n += binary.PutUvarint(b[n:], uint64(len(msg.MessagePtrArray)))
+	for i1 := 0; i1 < len(msg.MessagePtrArray); i1++ {
+		if msg.MessagePtrArray[i1] != nil {
+			b[n] = 1
+			n++
+			n += msg.MessagePtrArray[i1].Marshal(b[n:])
+		} else {
+			b[n] = 0
+			n++
+		}
+	}
+	n += binary.PutUvarint(b[n:], uint64(len(msg.MessageArrayArray)))
+	for i1 := 0; i1 < len(msg.MessageArrayArray); i1++ {
+		n += binary.PutUvarint(b[n:], uint64(len(msg.MessageArrayArray[i1])))
+		for i2 := 0; i2 < len(msg.MessageArrayArray[i1]); i2++ {
+			n += msg.MessageArrayArray[i1][i2].Marshal(b[n:])
+		}
+	}
+	n += binary.PutUvarint(b[n:], uint64(len(msg.IntMap)))
+	for key1, val1 := range msg.IntMap {
+		n += binary.PutVarint(b[n:], int64(key1))
+		n += binary.PutUvarint(b[n:], uint64(len(val1)))
+		for key2, val2 := range val1 {
+			n += binary.PutVarint(b[n:], int64(key2))
+			n += binary.PutUvarint(b[n:], uint64(len(val2)))
+			for i3 := 0; i3 < len(val2); i3++ {
+				if val2[i3] != nil {
+					b[n] = 1
+					n++
+					n += val2[i3].Marshal(b[n:])
+				} else {
+					b[n] = 0
+					n++
+				}
+			}
+		}
 	}
 	return n
 }
@@ -392,115 +462,128 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 	var n int
 	if b[n] != 0 {
 		n += 1
-		msg.IntPtr = new(int)
+		val1 := new(int)
 		{
 			v, x := binary.Varint(b[n:])
-			*msg.IntPtr = int(v)
+			*val1 = int(v)
 			n += x
 		}
+		msg.IntPtr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.UintPtr = new(uint)
+		val1 := new(uint)
 		{
 			v, x := binary.Uvarint(b[n:])
-			*msg.UintPtr = uint(v)
+			*val1 = uint(v)
 			n += x
 		}
+		msg.UintPtr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Int8Ptr = new(int8)
-		*msg.Int8Ptr = int8(b[n])
+		val1 := new(int8)
+		*val1 = int8(b[n])
 		n += 1
+		msg.Int8Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Uint8Ptr = new(uint8)
-		*msg.Uint8Ptr = uint8(b[n])
+		val1 := new(uint8)
+		*val1 = uint8(b[n])
 		n += 1
+		msg.Uint8Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Int16Ptr = new(int16)
-		*msg.Int16Ptr = int16(binary.LittleEndian.Uint16(b[n:]))
+		val1 := new(int16)
+		*val1 = int16(binary.LittleEndian.Uint16(b[n:]))
 		n += 2
+		msg.Int16Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Uint16Ptr = new(uint16)
-		*msg.Uint16Ptr = uint16(binary.LittleEndian.Uint16(b[n:]))
+		val1 := new(uint16)
+		*val1 = uint16(binary.LittleEndian.Uint16(b[n:]))
 		n += 2
+		msg.Uint16Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Int32Ptr = new(int32)
-		*msg.Int32Ptr = int32(binary.LittleEndian.Uint32(b[n:]))
+		val1 := new(int32)
+		*val1 = int32(binary.LittleEndian.Uint32(b[n:]))
 		n += 4
+		msg.Int32Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Uint32Ptr = new(uint32)
-		*msg.Uint32Ptr = uint32(binary.LittleEndian.Uint32(b[n:]))
+		val1 := new(uint32)
+		*val1 = uint32(binary.LittleEndian.Uint32(b[n:]))
 		n += 4
+		msg.Uint32Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Int64Ptr = new(int64)
-		*msg.Int64Ptr = int64(binary.LittleEndian.Uint64(b[n:]))
+		val1 := new(int64)
+		*val1 = int64(binary.LittleEndian.Uint64(b[n:]))
 		n += 8
+		msg.Int64Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Uint64Ptr = new(uint64)
-		*msg.Uint64Ptr = uint64(binary.LittleEndian.Uint64(b[n:]))
+		val1 := new(uint64)
+		*val1 = uint64(binary.LittleEndian.Uint64(b[n:]))
 		n += 8
+		msg.Uint64Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Float32Ptr = new(float32)
-		*msg.Float32Ptr = float32(gobuf.GetFloat32(b[n:]))
+		val1 := new(float32)
+		*val1 = float32(gobuf.GetFloat32(b[n:]))
 		n += 4
+		msg.Float32Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.Float64Ptr = new(float64)
-		*msg.Float64Ptr = float64(gobuf.GetFloat64(b[n:]))
+		val1 := new(float64)
+		*val1 = float64(gobuf.GetFloat64(b[n:]))
 		n += 8
+		msg.Float64Ptr = val1
 	} else {
 		n += 1
 	}
 	if b[n] != 0 {
 		n += 1
-		msg.StringPtr = new(string)
+		val1 := new(string)
 		{
 			l, x := binary.Uvarint(b[n:])
 			n += x
-			*msg.StringPtr = string(b[n : n+int(l)])
+			*val1 = string(b[n : n+int(l)])
 			n += int(l)
 		}
+		msg.StringPtr = val1
 	} else {
 		n += 1
 	}
@@ -508,10 +591,10 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.IntArray = make([]int, l)
-		for i := 0; i < int(l); i++ {
+		for i1 := 0; i1 < int(l); i1++ {
 			{
 				v, x := binary.Varint(b[n:])
-				msg.IntArray[i] = int(v)
+				msg.IntArray[i1] = int(v)
 				n += x
 			}
 		}
@@ -520,10 +603,10 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.UintArray = make([]uint, l)
-		for i := 0; i < int(l); i++ {
+		for i1 := 0; i1 < int(l); i1++ {
 			{
 				v, x := binary.Uvarint(b[n:])
-				msg.UintArray[i] = uint(v)
+				msg.UintArray[i1] = uint(v)
 				n += x
 			}
 		}
@@ -532,8 +615,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Int8Array = make([]int8, l)
-		for i := 0; i < int(l); i++ {
-			msg.Int8Array[i] = int8(b[n])
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Int8Array[i1] = int8(b[n])
 			n += 1
 		}
 	}
@@ -548,8 +631,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Int16Array = make([]int16, l)
-		for i := 0; i < int(l); i++ {
-			msg.Int16Array[i] = int16(binary.LittleEndian.Uint16(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Int16Array[i1] = int16(binary.LittleEndian.Uint16(b[n:]))
 			n += 2
 		}
 	}
@@ -557,8 +640,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Uint16Array = make([]uint16, l)
-		for i := 0; i < int(l); i++ {
-			msg.Uint16Array[i] = uint16(binary.LittleEndian.Uint16(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Uint16Array[i1] = uint16(binary.LittleEndian.Uint16(b[n:]))
 			n += 2
 		}
 	}
@@ -566,8 +649,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Int32Array = make([]int32, l)
-		for i := 0; i < int(l); i++ {
-			msg.Int32Array[i] = int32(binary.LittleEndian.Uint32(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Int32Array[i1] = int32(binary.LittleEndian.Uint32(b[n:]))
 			n += 4
 		}
 	}
@@ -575,8 +658,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Uint32Array = make([]uint32, l)
-		for i := 0; i < int(l); i++ {
-			msg.Uint32Array[i] = uint32(binary.LittleEndian.Uint32(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Uint32Array[i1] = uint32(binary.LittleEndian.Uint32(b[n:]))
 			n += 4
 		}
 	}
@@ -584,8 +667,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Int64Array = make([]int64, l)
-		for i := 0; i < int(l); i++ {
-			msg.Int64Array[i] = int64(binary.LittleEndian.Uint64(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Int64Array[i1] = int64(binary.LittleEndian.Uint64(b[n:]))
 			n += 8
 		}
 	}
@@ -593,8 +676,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Uint64Array = make([]uint64, l)
-		for i := 0; i < int(l); i++ {
-			msg.Uint64Array[i] = uint64(binary.LittleEndian.Uint64(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Uint64Array[i1] = uint64(binary.LittleEndian.Uint64(b[n:]))
 			n += 8
 		}
 	}
@@ -602,8 +685,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Float32Array = make([]float32, l)
-		for i := 0; i < int(l); i++ {
-			msg.Float32Array[i] = float32(gobuf.GetFloat32(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Float32Array[i1] = float32(gobuf.GetFloat32(b[n:]))
 			n += 4
 		}
 	}
@@ -611,8 +694,8 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.Float64Array = make([]float64, l)
-		for i := 0; i < int(l); i++ {
-			msg.Float64Array[i] = float64(gobuf.GetFloat64(b[n:]))
+		for i1 := 0; i1 < int(l); i1++ {
+			msg.Float64Array[i1] = float64(gobuf.GetFloat64(b[n:]))
 			n += 8
 		}
 	}
@@ -620,11 +703,11 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.StringArray = make([]string, l)
-		for i := 0; i < int(l); i++ {
+		for i1 := 0; i1 < int(l); i1++ {
 			{
 				l, x := binary.Uvarint(b[n:])
 				n += x
-				msg.StringArray[i] = string(b[n : n+int(l)])
+				msg.StringArray[i1] = string(b[n : n+int(l)])
 				n += int(l)
 			}
 		}
@@ -632,8 +715,9 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 	n += msg.Message.Unmarshal(b[n:])
 	if b[n] != 0 {
 		n += 1
-		msg.MessagePtr = new(ScalarTypes)
-		n += msg.MessagePtr.Unmarshal(b[n:])
+		val1 := new(ScalarTypes)
+		n += val1.Unmarshal(b[n:])
+		msg.MessagePtr = val1
 	} else {
 		n += 1
 	}
@@ -641,8 +725,83 @@ func (msg *CompositeTypes) Unmarshal(b []byte) int {
 		l, x := binary.Uvarint(b[n:])
 		n += x
 		msg.MessageArray = make([]ScalarTypes, l)
-		for i := 0; i < int(l); i++ {
-			n += msg.MessageArray[i].Unmarshal(b[n:])
+		for i1 := 0; i1 < int(l); i1++ {
+			n += msg.MessageArray[i1].Unmarshal(b[n:])
+		}
+	}
+	{
+		l, x := binary.Uvarint(b[n:])
+		n += x
+		msg.MessagePtrArray = make([]*ScalarTypes, l)
+		for i1 := 0; i1 < int(l); i1++ {
+			if b[n] != 0 {
+				n += 1
+				val2 := new(ScalarTypes)
+				n += val2.Unmarshal(b[n:])
+				msg.MessagePtrArray[i1] = val2
+			} else {
+				n += 1
+			}
+		}
+	}
+	{
+		l, x := binary.Uvarint(b[n:])
+		n += x
+		msg.MessageArrayArray = make([][]ScalarTypes, l)
+		for i1 := 0; i1 < int(l); i1++ {
+			{
+				l, x := binary.Uvarint(b[n:])
+				n += x
+				msg.MessageArrayArray[i1] = make([]ScalarTypes, l)
+				for i2 := 0; i2 < int(l); i2++ {
+					n += msg.MessageArrayArray[i1][i2].Unmarshal(b[n:])
+				}
+			}
+		}
+	}
+	{
+		l, x := binary.Uvarint(b[n:])
+		n += x
+		msg.IntMap = make(map[int]map[int][]*ScalarTypes, l)
+		for i1 := 0; i1 < int(l); i1++ {
+			var key1 int
+			var val1 map[int][]*ScalarTypes
+			{
+				v, x := binary.Varint(b[n:])
+				key1 = int(v)
+				n += x
+			}
+			{
+				l, x := binary.Uvarint(b[n:])
+				n += x
+				val1 = make(map[int][]*ScalarTypes, l)
+				for i2 := 0; i2 < int(l); i2++ {
+					var key2 int
+					var val2 []*ScalarTypes
+					{
+						v, x := binary.Varint(b[n:])
+						key2 = int(v)
+						n += x
+					}
+					{
+						l, x := binary.Uvarint(b[n:])
+						n += x
+						val2 = make([]*ScalarTypes, l)
+						for i3 := 0; i3 < int(l); i3++ {
+							if b[n] != 0 {
+								n += 1
+								val4 := new(ScalarTypes)
+								n += val4.Unmarshal(b[n:])
+								val2[i3] = val4
+							} else {
+								n += 1
+							}
+						}
+					}
+					val1[key2] = val2
+				}
+			}
+			msg.IntMap[key1] = val1
 		}
 	}
 	return n

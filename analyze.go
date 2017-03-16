@@ -58,47 +58,87 @@ func analyzeFile(f *file) (*Doc, error) {
 }
 
 func analyzeType(t types.Type) *Type {
-	type Array interface {
-		Elem() types.Type
+	array := analyzeArray(t)
+	if array != nil {
+		return array
 	}
 
-	switch tt := t.(type) {
-	case *types.Pointer:
-		if st := analyzeScalar(tt.Elem()); st != nil {
-			st.IsPointer = true
-			return st
-		}
-	case Array:
-		if st := analyzeScalar(tt.Elem()); st != nil {
-			if st.Kind == UINT8 {
-				st.Kind = BYTES
-			} else {
-				st.IsArray = true
-			}
-			return st
-		}
+	mapType := analyzeMap(t)
+	if mapType != nil {
+		return mapType
+	}
+
+	pointer := analyzePointer(t)
+	if pointer != nil {
+		return pointer
 	}
 
 	return analyzeScalar(t)
 }
 
-func analyzeScalar(t types.Type) *Type {
-	switch tt := t.(type) {
-	case *types.Basic:
-		kind := kindOfType(tt)
-		if kind != "" {
-			return &Type{Kind: kind}
+func analyzeNamed(t types.Type) (string, types.Type) {
+	if named, ok := t.(*types.Named); ok {
+		return named.String(), named.Underlying()
+	}
+	return "", t
+}
+
+func analyzeArray(t types.Type) *Type {
+	_, isArray := t.(*types.Array)
+	_, isSlice := t.(*types.Slice)
+
+	if isArray || isSlice {
+		type Array interface {
+			Elem() types.Type
 		}
-	case *types.Named:
-		if tt2, ok := tt.Underlying().(*types.Basic); ok {
-			kind := kindOfType(tt2)
-			if kind != "" {
-				return &Type{Kind: kind, Name: t.String()}
+
+		if array, ok := t.(Array); ok {
+			var length int
+
+			if array2, ok := t.(*types.Array); ok {
+				length = int(array2.Len())
 			}
+
+			elem := analyzeType(array.Elem())
+			if elem.Kind == UINT8 {
+				return &Type{Kind: BYTES, Len: length}
+			}
+
+			return &Type{Kind: ARRAY, Elem: elem, Len: length}
 		}
-		if _, ok := tt.Underlying().(*types.Struct); ok {
-			return &Type{MESSAGE, tt.String(), false, false}
+	}
+
+	return nil
+}
+
+func analyzeMap(t types.Type) *Type {
+	if mapType, ok := t.(*types.Map); ok {
+		key := analyzeScalar(mapType.Key())
+		elem := analyzeType(mapType.Elem())
+		if key != nil && elem != nil {
+			return &Type{Kind: MAP, Key: key, Elem: elem}
 		}
+	}
+	return nil
+}
+
+func analyzePointer(t types.Type) *Type {
+	if pointer, ok := t.(*types.Pointer); ok {
+		return &Type{Kind: POINTER, Elem: analyzeScalar(pointer.Elem())}
+	}
+	return nil
+}
+
+func analyzeScalar(t types.Type) *Type {
+	name, t2 := analyzeNamed(t)
+	if basic, ok := t2.(*types.Basic); ok {
+		kind := kindOfType(basic)
+		if kind != "" {
+			return &Type{Kind: kind, Name: name}
+		}
+	}
+	if _, ok := t2.(*types.Struct); ok {
+		return &Type{Kind: MESSAGE, Name: name}
 	}
 	return nil
 }
@@ -131,6 +171,8 @@ func kindOfType(t *types.Basic) string {
 		return FLOAT64
 	case types.String:
 		return STRING
+	case types.Bool:
+		return BOOL
 	}
 	return ""
 }

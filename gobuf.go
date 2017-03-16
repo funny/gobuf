@@ -18,6 +18,8 @@ const (
 	UINT64  = "Uint64"
 	FLOAT32 = "Float32"
 	FLOAT64 = "Float64"
+	BOOL    = "Bool"
+	MAP     = "Map"
 	ARRAY   = "Array"
 	BYTES   = "Bytes"
 	STRING  = "String"
@@ -53,15 +55,16 @@ type Field struct {
 }
 
 type Type struct {
-	Kind      string `json:",omitempty"`
-	Name      string `json:",omitempty"`
-	IsArray   bool   `json:",omitempty"`
-	IsPointer bool   `json:",omitempty"`
+	Kind string `json:",omitempty"`
+	Name string `json:",omitempty"`
+	Key  *Type  `json:",omitempty"`
+	Elem *Type  `json:",omitempty"`
+	Len  int    `json:",omitempty"`
 }
 
 func (t *Type) Size() int {
 	switch t.Kind {
-	case INT8, UINT8:
+	case INT8, UINT8, BOOL:
 		return 1
 	case INT16, UINT16:
 		return 2

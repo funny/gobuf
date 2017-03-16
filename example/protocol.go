@@ -58,7 +58,11 @@ type CompositeTypes struct {
 	Float64Array []float64
 	StringArray  []string
 
-	Message      ScalarTypes
-	MessagePtr   *ScalarTypes
-	MessageArray []ScalarTypes
+	Message           ScalarTypes
+	MessagePtr        *ScalarTypes
+	MessageArray      []ScalarTypes
+	MessagePtrArray   []*ScalarTypes
+	MessageArrayArray [][]ScalarTypes
+
+	IntMap map[int]map[int][]*ScalarTypes
 }
