@@ -74,7 +74,7 @@ func genScalarSizer(o *writer, name string, t *gobuf.Type) {
 	case gobuf.UINT:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s);", name)
 	case gobuf.STRING:
-		o.Writef("size += Gobuf.StringSize(%s);", name, name)
+		o.Writef("size += Gobuf.StringSize(%s);", name)
 	case gobuf.BYTES:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length;", name, name)
 	case gobuf.MESSAGE:

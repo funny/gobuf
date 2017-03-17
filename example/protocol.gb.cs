@@ -29,7 +29,7 @@ class ScalarTypes {
 		size += 8;
 		size += 4;
 		size += 8;
-		size += Gobuf.UvarintSize((ulong)this.String.Length) + this.String.Length;
+		size += Gobuf.StringSize(this.String);
 		size += Gobuf.UvarintSize((ulong)this.Bytes.Length) + this.Bytes.Length;
 		return size;
 	}
@@ -161,7 +161,7 @@ class CompositeTypes {
 		}
 		size += 1;
 		if (this.StringPtr != null) {
-			size += Gobuf.UvarintSize((ulong)this.StringPtr.Length) + this.StringPtr.Length;
+			size += Gobuf.StringSize(this.StringPtr);
 		}
 		size += Gobuf.UvarintSize((ulong)this.IntArray.Length);
 		for (var i1 = 0; i1 < this.IntArray.Length; i1 ++) {
@@ -183,7 +183,7 @@ class CompositeTypes {
 		size += Gobuf.UvarintSize((ulong)this.Float64Array.Length) + this.Float64Array.Length * 8;
 		size += Gobuf.UvarintSize((ulong)this.StringArray.Length);
 		for (var i1 = 0; i1 < this.StringArray.Length; i1 ++) {
-			size += Gobuf.UvarintSize((ulong)this.StringArray[i1].Length) + this.StringArray[i1].Length;
+			size += Gobuf.StringSize(this.StringArray[i1]);
 		}
 		size += this.Message.Size();
 		size += 1;

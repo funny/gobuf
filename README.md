@@ -1,24 +1,79 @@
-Scalar Types
-====
+What's is Gobuf?
+================
 
-| Type | Encoding |
-| --- | --- |
-| int | zig-zag + base128 uvarint |
-| uint | base128 uvarint |
-| byte, int8, uint8 | 1byte |
+Gobuf is a binary serialization format like protobuf.
+
+But it didn't need any DSL file to define messages.
+
+It just needs you write down data format by Go structs.
+
+It can analize Go struct and generate marshaller and unmarshaller code automaticlly.
+
+And it not only supports generate Go code but also C#.
+
+It has a good plugin mechanism, let you can add different programming language generation easily.
+
+Types
+=====
+
+Gobuf supports almost all kinds of Go data type, but it has some limits.
+
+This is all the data types that Gobuf supports:
+
+* Type = Scalar | Pointer | Array | Map
+* Scalar = Numberic | string | bool
+* Pointer = *Scalar | *Struct
+* Array = []Type
+* Map = map[Scalar]Type
+* Numeric = int | uint | int8 | uint8 | int16 | uint16 | int32 | uint32 | int64 | uint64 | float32 | float64
+
+Type Maping
+===========
+
+Gobuf maping Go type to different programming languages.
+
+This is the type maping rule:
+
+| Go | C# |
+| -- | -- |
+| int | long |
+| uint | ulong |
+| int8 | sbyte |
+| uint8 | byte |
+| int16 | short |
+| uint16 | ushort |
+| int32 | int |
+| uint32 | uint |
+| int64 | long |
+| uint64 | ulong |
+| float32 | float |
+| float64 | double |
+| bool | bool |
+| string | utf8 string |
+| []byte | byte[] |
+| []Type | List\<Type\> |
+| *Scalar | Nullable\<Scalar\> |
+| *Struct | Class |
+| map[Scalar]Type | Dictionary\<Scalar, Type\> |
+| Struct | Class |
+
+Wired Format
+============
+
+| Type | Format |
+| -- | -- |
+| int | base128 varint + zig-zag |
+| uint | base128 varint |
+| int8, uint8, bool | 1byte |
 | int16, uint16 | 2byte little-endian |
 | int32, uint32 | 4byte little-endian |
 | int64, uint64 | 8byte little-endian |
-| float32 | float32 to uint32 |
-| float64 | float64 to uint64 |
-| string, []byte | uvarint(length) + length |
-
-Composite Types
-=====
-
-| Type | Supports | Encoding |
-| --- | --- | --- |
-| Message | struct | foreach(field) |
-| Array | []{Composite \| Scalar} | uvarint(count) + foreach(item) |
-| Map | map[Scalar]{Composite \| Scalar} | uvarint(count) + foreach(key, value)
-| Pointer | *{Message \| Scalar} | byte(0) or byte(1) + {Scalar \| Message} |
+| float32 | convert to uint32 bits |
+| float64 | convert to uint64 bits |
+| string | uint(utf8\_length) + utf8\_length |
+| []byte | uint(length) + length |
+| []Type | uint(count) + items |
+| *Scalar | is_null ? uint8(0) : uint8(1) + element |
+| *Struct | is_null ? uint8(0) : uint8(1) + fields |
+| map[Scalar]Type | uint(count) + items(key + value) |
+| Struct | fields |
