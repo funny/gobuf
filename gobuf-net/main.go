@@ -9,7 +9,7 @@ import (
 
 	"strings"
 
-	"github.com/hotgo/gobuf"
+	"github.com/funny/gobuf"
 )
 
 func main() {

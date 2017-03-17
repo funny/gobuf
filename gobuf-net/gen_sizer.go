@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/hotgo/gobuf"
+	"github.com/funny/gobuf"
 )
 
 func genSizer(o *writer, name string, t *gobuf.Type, n int) {

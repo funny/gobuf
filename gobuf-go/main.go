@@ -9,7 +9,7 @@ import (
 
 	"go/format"
 
-	"github.com/hotgo/gobuf"
+	"github.com/funny/gobuf"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 
 	o.Writef("package %s", doc.Package)
 
-	o.Writef(`import "github.com/hotgo/gobuf"`)
+	o.Writef(`import "github.com/funny/gobuf"`)
 	o.Writef(`import "encoding/binary"`)
 
 	for _, msg := range doc.Messages {
