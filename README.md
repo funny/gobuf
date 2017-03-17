@@ -22,7 +22,7 @@ Gobuf supports almost all kinds of Go data type, but it has some limits.
 
 This is all the data types that Gobuf supports:
 
-* Type = Scalar | Pointer | Array | Map
+* Type = Scalar | Pointer | Array | Map | []byte
 * Scalar = Numberic | string | bool
 * Pointer = *Scalar | *Struct
 * Array = []Type
