@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 )
 
-func genMarshaler(o *writer, name string, t *gb.Type, n int) {
+func genMarshaler(o *writer, name string, t *parser.Type, n int) {
 	if genArrayMarshaler(o, name, t, n) {
 		return
 	}
@@ -19,8 +19,8 @@ func genMarshaler(o *writer, name string, t *gb.Type, n int) {
 	genScalarMarshaler(o, name, t)
 }
 
-func genArrayMarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.ARRAY {
+func genArrayMarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.ARRAY {
 		o.Writef("n = Gobuf.WriteUvarint((ulong)%s.Length, b, n);", name)
 		o.Writef("for (var i%d = 0; i%d < %s.Length; i%d ++) {", n, n, name, n)
 		genMarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
@@ -30,8 +30,8 @@ func genArrayMarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genMapMarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.MAP {
+func genMapMarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.MAP {
 		o.Writef("n = Gobuf.WriteUvarint((ulong)%s.Length, b, n);", name)
 		o.Writef("foreach (var item%d in %s) {", n, name)
 		genScalarMarshaler(o, fmt.Sprintf("item%d.Key", n), t.Key)
@@ -41,8 +41,8 @@ func genMapMarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genPointerMarshaler(o *writer, name string, t *gb.Type) bool {
-	if t.Kind == gb.POINTER {
+func genPointerMarshaler(o *writer, name string, t *parser.Type) bool {
+	if t.Kind == parser.POINTER {
 		o.Writef("if (%s != null) {", name)
 		o.Writef("	b[n] = 1;")
 		o.Writef("	n ++;")
@@ -56,30 +56,30 @@ func genPointerMarshaler(o *writer, name string, t *gb.Type) bool {
 	return false
 }
 
-func genScalarMarshaler(o *writer, name string, t *gb.Type) {
+func genScalarMarshaler(o *writer, name string, t *parser.Type) {
 	switch t.Kind {
-	case gb.INT8, gb.UINT8:
+	case parser.INT8, parser.UINT8:
 		o.Writef("b[n] = (byte)%s;", name)
 		o.Writef("n += 1;")
-	case gb.INT16, gb.UINT16:
+	case parser.INT16, parser.UINT16:
 		o.Writef("n = Gobuf.WriteUint16((ushort)%s, b, n);", name)
-	case gb.INT32, gb.UINT32:
+	case parser.INT32, parser.UINT32:
 		o.Writef("n = Gobuf.WriteUint32((long)%s, b, n);", name)
-	case gb.INT64, gb.UINT64:
+	case parser.INT64, parser.UINT64:
 		o.Writef("n = Gobuf.WriteUint64((ulong)%s, b, n);", name)
-	case gb.FLOAT32:
+	case parser.FLOAT32:
 		o.Writef("n = Gobuf.WriteFloat32((float)%s, b, n);", name)
-	case gb.FLOAT64:
+	case parser.FLOAT64:
 		o.Writef("n = Gobuf.WriteFloat64((double)%s, b, n);", name)
-	case gb.INT:
+	case parser.INT:
 		o.Writef("n = Gobuf.WriteVarint((long)%s, b, n);", name)
-	case gb.UINT:
+	case parser.UINT:
 		o.Writef("n = Gobuf.WriteUvarint((ulong)%s, b, n);", name)
-	case gb.BYTES:
+	case parser.BYTES:
 		o.Writef("n = Gobuf.WriteBytes(%s, b, n);", name)
-	case gb.STRING:
+	case parser.STRING:
 		o.Writef("n = Gobuf.WriteString(%s, b, n);", name)
-	case gb.STRUCT:
+	case parser.STRUCT:
 		o.Writef("n = %s.Marshal(b, n);", name)
 	}
 }

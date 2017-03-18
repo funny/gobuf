@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 
 	"strings"
 )
 
 func main() {
-	var doc gb.Doc
+	var doc parser.Doc
 
 	decoder := json.NewDecoder(os.Stdin)
 
@@ -84,49 +84,49 @@ func (w *writer) Writef(format string, args ...interface{}) {
 	w.WriteByte('\n')
 }
 
-func typeName(t *gb.Type) string {
+func typeName(t *parser.Type) string {
 	if t.Name != "" {
 		return t.Name
 	}
 	switch t.Kind {
-	case gb.INT:
+	case parser.INT:
 		return "long"
-	case gb.UINT:
+	case parser.UINT:
 		return "ulong"
-	case gb.INT8:
+	case parser.INT8:
 		return "sbyte"
-	case gb.UINT8:
+	case parser.UINT8:
 		return "byte"
-	case gb.INT16:
+	case parser.INT16:
 		return "short"
-	case gb.UINT16:
+	case parser.UINT16:
 		return "ushort"
-	case gb.INT32:
+	case parser.INT32:
 		return "int"
-	case gb.UINT32:
+	case parser.UINT32:
 		return "uint"
-	case gb.INT64:
+	case parser.INT64:
 		return "long"
-	case gb.UINT64:
+	case parser.UINT64:
 		return "ulong"
-	case gb.FLOAT32:
+	case parser.FLOAT32:
 		return "float"
-	case gb.FLOAT64:
+	case parser.FLOAT64:
 		return "double"
-	case gb.STRING:
+	case parser.STRING:
 		return "string"
-	case gb.BYTES:
+	case parser.BYTES:
 		return "byte[]"
-	case gb.BOOL:
+	case parser.BOOL:
 		return "bool"
-	case gb.MAP:
+	case parser.MAP:
 		return fmt.Sprintf("Dictionary<%s, %s>", typeName(t.Key), typeName(t.Elem))
-	case gb.POINTER:
-		if t.Elem.Kind == gb.STRUCT {
+	case parser.POINTER:
+		if t.Elem.Kind == parser.STRUCT {
 			return typeName(t.Elem)
 		}
 		return fmt.Sprintf("Nullable<%s>", typeName(t.Elem))
-	case gb.ARRAY:
+	case parser.ARRAY:
 		if t.Len != 0 {
 			return fmt.Sprintf("%s[%d]", t.Len, typeName(t.Elem))
 		}

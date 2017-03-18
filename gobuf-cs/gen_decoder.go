@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 )
 
-func genUnmarshaler(o *writer, name string, t *gb.Type, n int) {
+func genUnmarshaler(o *writer, name string, t *parser.Type, n int) {
 	if genArrayUnmarshaler(o, name, t, n) {
 		return
 	}
@@ -19,8 +19,8 @@ func genUnmarshaler(o *writer, name string, t *gb.Type, n int) {
 	genScalarUnmarshaler(o, name, t)
 }
 
-func genArrayUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.ARRAY {
+func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.ARRAY {
 		o.Writef("{")
 		o.Writef("	ulong l;")
 		o.Writef("	n = Gobuf.ReadUvarint(out l, b, n);")
@@ -34,8 +34,8 @@ func genArrayUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genMapUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.MAP {
+func genMapUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.MAP {
 		o.Writef("{")
 		o.Writef("	ulong l;")
 		o.Writef("	n = Gobuf.ReadUvarint(out l, b, n);")
@@ -52,8 +52,8 @@ func genMapUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genPointerUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.POINTER {
+func genPointerUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.POINTER {
 		o.Writef("if (b[n] != 0) {")
 		o.Writef("	n += 1;")
 		o.Writef("	var val%d = new %s();", n, typeName(t.Elem))
@@ -67,30 +67,30 @@ func genPointerUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genScalarUnmarshaler(o *writer, name string, t *gb.Type) {
+func genScalarUnmarshaler(o *writer, name string, t *parser.Type) {
 	switch t.Kind {
-	case gb.INT8, gb.UINT8:
+	case parser.INT8, parser.UINT8:
 		o.Writef("%s = (%s)b[n];", name, typeName(t))
 		o.Writef("n += 1;")
-	case gb.INT16, gb.UINT16:
+	case parser.INT16, parser.UINT16:
 		o.Writef("n = (%s)Gobuf.ReadUint16(out %s, b, n);", typeName(t), name)
-	case gb.INT32, gb.UINT32:
+	case parser.INT32, parser.UINT32:
 		o.Writef("n = (%s)Gobuf.ReadUint32(out %s, b, n);", typeName(t), name)
-	case gb.INT64, gb.UINT64:
+	case parser.INT64, parser.UINT64:
 		o.Writef("n = (%s)Gobuf.ReadUint64(out %s, b, n);", typeName(t), name)
-	case gb.FLOAT32:
+	case parser.FLOAT32:
 		o.Writef("n = (%s)Gobuf.ReadFloat32(out %s, b, n);", typeName(t), name)
-	case gb.FLOAT64:
+	case parser.FLOAT64:
 		o.Writef("n = (%s)Gobuf.ReadFloat64(out %s, b, n);", typeName(t), name)
-	case gb.INT:
+	case parser.INT:
 		o.Writef("n = (%s)Gobuf.ReadVarint(out %s, b, n);", typeName(t), name)
-	case gb.UINT:
+	case parser.UINT:
 		o.Writef("n = (%s)Gobuf.ReadUvarint(out %s, b, n);", typeName(t), name)
-	case gb.BYTES:
+	case parser.BYTES:
 		o.Writef("n = (%s)Gobuf.ReadBytes(out %s, b, n);", typeName(t), name)
-	case gb.STRING:
+	case parser.STRING:
 		o.Writef("n = (%s)Gobuf.ReadString(out %s, b, n);", typeName(t), name)
-	case gb.STRUCT:
+	case parser.STRUCT:
 		o.Writef("n = %s.Unmarshal(b, n);", name)
 	}
 }

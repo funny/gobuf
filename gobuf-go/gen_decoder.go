@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 )
 
-func genUnmarshaler(o *writer, name string, t *gb.Type, n int) {
+func genUnmarshaler(o *writer, name string, t *parser.Type, n int) {
 	if genArrayUnmarshaler(o, name, t, n) {
 		return
 	}
@@ -22,8 +22,8 @@ func genUnmarshaler(o *writer, name string, t *gb.Type, n int) {
 	genScalarUnmarshaler(o, name, t)
 }
 
-func genArrayUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.ARRAY {
+func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.ARRAY {
 		o.Writef("{")
 		o.Writef("	l, x := binary.Uvarint(b[n:])")
 		o.Writef("	n += x")
@@ -37,8 +37,8 @@ func genArrayUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genMapUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.MAP {
+func genMapUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.MAP {
 		o.Writef("{")
 		o.Writef("	l, x := binary.Uvarint(b[n:])")
 		o.Writef("	n += x")
@@ -55,8 +55,8 @@ func genMapUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genPointerUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.POINTER {
+func genPointerUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.POINTER {
 		o.Writef("if b[n] != 0 {")
 		o.Writef("	n += 1")
 		o.Writef("	val%d := new(%s)", n, typeName(t.Elem))
@@ -70,39 +70,39 @@ func genPointerUnmarshaler(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genScalarUnmarshaler(o *writer, name string, t *gb.Type) {
+func genScalarUnmarshaler(o *writer, name string, t *parser.Type) {
 	switch t.Kind {
-	case gb.INT8, gb.UINT8:
+	case parser.INT8, parser.UINT8:
 		o.Writef("%s = %s(b[n])", name, typeName(t))
 		o.Writef("n += 1")
-	case gb.INT16, gb.UINT16:
+	case parser.INT16, parser.UINT16:
 		o.Writef("%s = %s(binary.LittleEndian.Uint16(b[n:]))", name, typeName(t))
 		o.Writef("n += 2")
-	case gb.INT32, gb.UINT32:
+	case parser.INT32, parser.UINT32:
 		o.Writef("%s = %s(binary.LittleEndian.Uint32(b[n:]))", name, typeName(t))
 		o.Writef("n += 4")
-	case gb.INT64, gb.UINT64:
+	case parser.INT64, parser.UINT64:
 		o.Writef("%s = %s(binary.LittleEndian.Uint64(b[n:]))", name, typeName(t))
 		o.Writef("n += 8")
-	case gb.FLOAT32:
-		o.Writef("%s = %s(gb.GetFloat32(b[n:]))", name, typeName(t))
+	case parser.FLOAT32:
+		o.Writef("%s = %s($name$_GetFloat32(b[n:]))", name, typeName(t))
 		o.Writef("n += 4")
-	case gb.FLOAT64:
-		o.Writef("%s = %s(gb.GetFloat64(b[n:]))", name, typeName(t))
+	case parser.FLOAT64:
+		o.Writef("%s = %s($name$_GetFloat64(b[n:]))", name, typeName(t))
 		o.Writef("n += 8")
-	case gb.INT:
+	case parser.INT:
 		o.Writef("{")
 		o.Writef("	v, x := binary.Varint(b[n:])")
 		o.Writef("	%s = %s(v)", name, typeName(t))
 		o.Writef("	n += x")
 		o.Writef("}")
-	case gb.UINT:
+	case parser.UINT:
 		o.Writef("{")
 		o.Writef("	v, x := binary.Uvarint(b[n:])")
 		o.Writef("	%s = %s(v)", name, typeName(t))
 		o.Writef("	n += x")
 		o.Writef("}")
-	case gb.BYTES:
+	case parser.BYTES:
 		o.Writef("{")
 		o.Writef("	l, x := binary.Uvarint(b[n:])")
 		o.Writef("	n += x")
@@ -110,14 +110,14 @@ func genScalarUnmarshaler(o *writer, name string, t *gb.Type) {
 		o.Writef("	copy(%s, b[n:n+int(l)])", name)
 		o.Writef("	n += int(l)")
 		o.Writef("}")
-	case gb.STRING:
+	case parser.STRING:
 		o.Writef("{")
 		o.Writef("	l, x := binary.Uvarint(b[n:])")
 		o.Writef("	n += x")
 		o.Writef("	%s = string(b[n:n+int(l)])", name)
 		o.Writef("	n += int(l)")
 		o.Writef("}")
-	case gb.STRUCT:
+	case parser.STRUCT:
 		if name[0] == '*' {
 			name = name[1:]
 		}

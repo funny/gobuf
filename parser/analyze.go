@@ -1,4 +1,4 @@
-package gb
+package parser
 
 import (
 	"fmt"
@@ -54,7 +54,7 @@ func analyzeFile(f *file) (*Doc, error) {
 		}
 	}
 
-	return &Doc{f.Package, enums, structs}, nil
+	return &Doc{f.Name, f.Package, enums, structs}, nil
 }
 
 func analyzeType(t types.Type) *Type {

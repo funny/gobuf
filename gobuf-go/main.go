@@ -7,13 +7,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 
 	"go/format"
+	"path"
+	"strings"
 )
 
 func main() {
-	var doc gb.Doc
+	var doc parser.Doc
 
 	decoder := json.NewDecoder(os.Stdin)
 
@@ -21,11 +23,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var name = strings.TrimSuffix(path.Base(doc.File), path.Ext(doc.File))
+
 	var o writer
 
 	o.Writef("package %s", doc.Package)
 
-	o.Writef(`import "github.com/funny/gobuf"`)
+	o.Writef(`import "math"`)
 	o.Writef(`import "encoding/binary"`)
 
 	for _, s := range doc.Structs {
@@ -54,11 +58,46 @@ func main() {
 		o.Writef("}\n")
 	}
 
-	source, err := format.Source(o.Bytes())
+	o.WriteString(`
+func $name$_UvarintSize(x uint64) int {
+	i := 0
+	for x >= 0x80 {
+		x >>= 7
+		i++
+	}
+	return i + 1
+}
+
+func $name$_VarintSize(x int64) int {
+	ux := uint64(x) << 1
+	if x < 0 {
+		ux = ^ux
+	}
+	return $name$_UvarintSize(ux)
+}
+
+func $name$_GetFloat32(b []byte) float32 {
+	return math.Float32frombits(binary.LittleEndian.Uint32(b))
+}
+
+func $name$_PutFloat32(b []byte, v float32) {
+	binary.LittleEndian.PutUint32(b, math.Float32bits(v))
+}
+
+func $name$_GetFloat64(b []byte) float64 {
+	return math.Float64frombits(binary.LittleEndian.Uint64(b))
+}
+
+func $name$_PutFloat64(b []byte, v float64) {
+	binary.LittleEndian.PutUint64(b, math.Float64bits(v))
+}
+`)
+
+	code := bytes.Replace(o.Bytes(), []byte("$name$"), []byte(name), -1)
+
+	source, err := format.Source(code)
 	if err != nil {
-		if _, err := o.WriteTo(os.Stdout); err != nil {
-			log.Fatal(err)
-		}
+		fmt.Print(string(code))
 		log.Fatal(err)
 	}
 
@@ -76,46 +115,46 @@ func (w *writer) Writef(format string, args ...interface{}) {
 	w.WriteByte('\n')
 }
 
-func typeName(t *gb.Type) string {
+func typeName(t *parser.Type) string {
 	if t.Name != "" {
 		return t.Name
 	}
 	switch t.Kind {
-	case gb.INT:
+	case parser.INT:
 		return "int"
-	case gb.UINT:
+	case parser.UINT:
 		return "uint"
-	case gb.INT8:
+	case parser.INT8:
 		return "int8"
-	case gb.UINT8:
+	case parser.UINT8:
 		return "uint8"
-	case gb.INT16:
+	case parser.INT16:
 		return "int16"
-	case gb.UINT16:
+	case parser.UINT16:
 		return "uint16"
-	case gb.INT32:
+	case parser.INT32:
 		return "int32"
-	case gb.UINT32:
+	case parser.UINT32:
 		return "uint32"
-	case gb.INT64:
+	case parser.INT64:
 		return "int64"
-	case gb.UINT64:
+	case parser.UINT64:
 		return "uint64"
-	case gb.FLOAT32:
+	case parser.FLOAT32:
 		return "float32"
-	case gb.FLOAT64:
+	case parser.FLOAT64:
 		return "float64"
-	case gb.STRING:
+	case parser.STRING:
 		return "string"
-	case gb.BYTES:
+	case parser.BYTES:
 		return "[]byte"
-	case gb.BOOL:
+	case parser.BOOL:
 		return "bool"
-	case gb.MAP:
+	case parser.MAP:
 		return fmt.Sprintf("map[%s]%s", typeName(t.Key), typeName(t.Elem))
-	case gb.POINTER:
+	case parser.POINTER:
 		return fmt.Sprintf("*%s", typeName(t.Elem))
-	case gb.ARRAY:
+	case parser.ARRAY:
 		if t.Len != 0 {
 			return fmt.Sprintf("[%d]%s", t.Len, typeName(t.Elem))
 		}

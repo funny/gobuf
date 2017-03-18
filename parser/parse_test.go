@@ -1,4 +1,4 @@
-package gb
+package parser
 
 import (
 	"go/ast"

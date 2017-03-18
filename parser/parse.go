@@ -1,4 +1,4 @@
-package gb
+package parser
 
 import (
 	"errors"
@@ -11,6 +11,7 @@ import (
 )
 
 type file struct {
+	Name    string
 	Package string
 	Consts  []*types.Const
 	Structs map[string]*types.Struct
@@ -44,6 +45,7 @@ func parseFile(name string) (*file, error) {
 	}
 
 	return &file{
+		Name:    name,
 		Package: f.Name.Name,
 		Consts:  scanConsts(f, pkg),
 		Structs: scanStructs(f, pkg),

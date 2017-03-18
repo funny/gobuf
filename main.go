@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 
 	"encoding/json"
 	"flag"
@@ -25,7 +25,7 @@ func main() {
 }
 
 func genFile(name string) {
-	doc, err := gb.Parse(name)
+	doc, err := parser.Parse(name)
 	if err != nil {
 		log.Fatal(err)
 	}

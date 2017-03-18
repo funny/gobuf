@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf/gb"
+	"github.com/funny/gobuf/parser"
 )
 
-func genSizer(o *writer, name string, t *gb.Type, n int) {
+func genSizer(o *writer, name string, t *parser.Type, n int) {
 	if genArraySizer(o, name, t, n) {
 		return
 	}
@@ -19,8 +19,8 @@ func genSizer(o *writer, name string, t *gb.Type, n int) {
 	genScalarSizer(o, name, t)
 }
 
-func genArraySizer(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.ARRAY {
+func genArraySizer(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.ARRAY {
 		elemSize := t.Elem.Size()
 		if elemSize != 0 {
 			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length * %d;", name, name, elemSize)
@@ -35,8 +35,8 @@ func genArraySizer(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genMapSizer(o *writer, name string, t *gb.Type, n int) bool {
-	if t.Kind == gb.MAP {
+func genMapSizer(o *writer, name string, t *parser.Type, n int) bool {
+	if t.Kind == parser.MAP {
 		keySize := t.Key.Size()
 		elemSize := t.Elem.Size()
 		if keySize != 0 && elemSize != 0 {
@@ -52,8 +52,8 @@ func genMapSizer(o *writer, name string, t *gb.Type, n int) bool {
 	return false
 }
 
-func genPointerSizer(o *writer, name string, t *gb.Type) bool {
-	if t.Kind == gb.POINTER {
+func genPointerSizer(o *writer, name string, t *parser.Type) bool {
+	if t.Kind == parser.POINTER {
 		o.Writef("size += 1;")
 		o.Writef("if (%s != null) {", name)
 		genScalarSizer(o, name, t.Elem)
@@ -63,21 +63,21 @@ func genPointerSizer(o *writer, name string, t *gb.Type) bool {
 	return false
 }
 
-func genScalarSizer(o *writer, name string, t *gb.Type) {
+func genScalarSizer(o *writer, name string, t *parser.Type) {
 	if t.Size() != 0 {
 		o.Writef("size += %d;", t.Size())
 		return
 	}
 	switch t.Kind {
-	case gb.INT:
+	case parser.INT:
 		o.Writef("size += Gobuf.VarintSize((long)%s);", name)
-	case gb.UINT:
+	case parser.UINT:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s);", name)
-	case gb.STRING:
+	case parser.STRING:
 		o.Writef("size += Gobuf.StringSize(%s);", name)
-	case gb.BYTES:
+	case parser.BYTES:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length;", name, name)
-	case gb.STRUCT:
+	case parser.STRUCT:
 		o.Writef("size += %s.Size();", name)
 	}
 }
