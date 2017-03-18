@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/funny/gobuf/gobuf"
+
 	"encoding/json"
 	"flag"
 	"log"
-
-	"github.com/funny/gobuf"
 )
 
 func main() {
