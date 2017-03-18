@@ -22,12 +22,15 @@ Gobuf supports almost all kinds of Go data type, but it has some limits.
 
 This is all the data types that Gobuf supports:
 
-* Type = Scalar | Pointer | Array | Map | []byte
-* Scalar = Numberic | string | bool
-* Pointer = *Scalar | *Struct
-* Array = []Type
-* Map = map[Scalar]Type
-* Numeric = int | uint | int8 | uint8 | int16 | uint16 | int32 | uint32 | int64 | uint64 | float32 | float64
+* Type = Scalar | Composite
+* Scalar = Numberic | "string" | "bool"
+* Numeric = "int" | "uint" | "int8" | "uint8" | "int16" | "uint16" | "int32" | "uint32" | "int64" | "uint64" | "float32" | "float64"
+* Composite = Pointer | Array | Map | Bytes | Struct
+* Pointer = "\*" ( Scalar | Struct )
+* Array = "[" "]" Type
+* Bytes = "[" "]" "byte"
+* Map = "map" "[" Scalar "]" Type
+* Struct = "type" Name "struct" "{" Name Type [";" Name Type] "}"
 
 Type Maping
 ===========
