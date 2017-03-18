@@ -23,31 +23,31 @@ func main() {
 
 	var o writer
 
-	for _, msg := range doc.Messages {
-		o.Writef("class %s {", msg.Name)
+	for _, s := range doc.Structs {
+		o.Writef("class %s {", s.Name)
 
-		for _, field := range msg.Fields {
+		for _, field := range s.Fields {
 			o.Writef("public %s %s;", typeName(field.Type), field.Name)
 		}
 
 		o.Writef("public int Size() {")
 		o.Writef("int size;")
-		for _, field := range msg.Fields {
+		for _, field := range s.Fields {
 			genSizer(&o, "this."+field.Name, field.Type, 1)
 		}
 		o.Writef("return size;")
 		o.Writef("}")
 
 		o.Writef("public int Marshal(byte[] b, int n) {")
-		for _, field := range msg.Fields {
-			genMarshaler(&o, "msg."+field.Name, field.Type, 1)
+		for _, field := range s.Fields {
+			genMarshaler(&o, "this."+field.Name, field.Type, 1)
 		}
 		o.Writef("return n;")
 		o.Writef("}")
 
 		o.Writef("public int Unmarshal(byte[] b, int n) {")
-		for _, field := range msg.Fields {
-			genUnmarshaler(&o, "msg."+field.Name, field.Type, 1)
+		for _, field := range s.Fields {
+			genUnmarshaler(&o, "this."+field.Name, field.Type, 1)
 		}
 		o.Writef("return n;")
 		o.Writef("}")
@@ -122,7 +122,7 @@ func typeName(t *gb.Type) string {
 	case gb.MAP:
 		return fmt.Sprintf("Dictionary<%s, %s>", typeName(t.Key), typeName(t.Elem))
 	case gb.POINTER:
-		if t.Elem.Kind == gb.MESSAGE {
+		if t.Elem.Kind == gb.STRUCT {
 			return typeName(t.Elem)
 		}
 		return fmt.Sprintf("Nullable<%s>", typeName(t.Elem))

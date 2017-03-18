@@ -31,30 +31,30 @@ func analyzeFile(f *file) (*Doc, error) {
 		})
 	}
 
-	var msgs []*Message
+	var structs []*Struct
 
-	for name, s := range f.Messages {
-		msg := &Message{
+	for name, s := range f.Structs {
+		st := &Struct{
 			Name:   name,
 			Fields: make([]*Field, s.NumFields()),
 		}
-		msgs = append(msgs, msg)
+		structs = append(structs, st)
 
 		for i := 0; i < s.NumFields(); i++ {
 			field := s.Field(i)
 
-			msg.Fields[i] = &Field{
+			st.Fields[i] = &Field{
 				Name: field.Name(),
 				Type: analyzeType(field.Type()),
 			}
 
-			if msg.Fields[i].Type == nil {
+			if st.Fields[i].Type == nil {
 				return nil, fmt.Errorf("gobuf: unsupported field type \"%s\"", field.Type().String())
 			}
 		}
 	}
 
-	return &Doc{f.Package, enums, msgs}, nil
+	return &Doc{f.Package, enums, structs}, nil
 }
 
 func analyzeType(t types.Type) *Type {
@@ -138,7 +138,7 @@ func analyzeScalar(t types.Type) *Type {
 		}
 	}
 	if _, ok := t2.(*types.Struct); ok {
-		return &Type{Kind: MESSAGE, Name: name}
+		return &Type{Kind: STRUCT, Name: name}
 	}
 	return nil
 }

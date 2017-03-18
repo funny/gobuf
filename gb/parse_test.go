@@ -93,7 +93,7 @@ type CompositeTypes struct {
 		t.Fatal(err)
 	}
 
-	structs := scanMessages(f, pkg)
+	structs := scanStructs(f, pkg)
 
 	utest.EqualNow(t, 2, len(structs))
 	utest.Assert(t, structs["ScalarTypes"] != nil)

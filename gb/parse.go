@@ -11,9 +11,9 @@ import (
 )
 
 type file struct {
-	Package  string
-	Consts   []*types.Const
-	Messages map[string]*types.Struct
+	Package string
+	Consts  []*types.Const
+	Structs map[string]*types.Struct
 }
 
 func parseFile(name string) (*file, error) {
@@ -44,9 +44,9 @@ func parseFile(name string) (*file, error) {
 	}
 
 	return &file{
-		Package:  f.Name.Name,
-		Consts:   scanConsts(f, pkg),
-		Messages: scanMessages(f, pkg),
+		Package: f.Name.Name,
+		Consts:  scanConsts(f, pkg),
+		Structs: scanStructs(f, pkg),
 	}, nil
 }
 
@@ -75,7 +75,7 @@ func scanConsts(f *ast.File, pkg *types.Package) []*types.Const {
 	return consts
 }
 
-func scanMessages(f *ast.File, pkg *types.Package) map[string]*types.Struct {
+func scanStructs(f *ast.File, pkg *types.Package) map[string]*types.Struct {
 	messages := make(map[string]*types.Struct)
 
 	for _, decl := range f.Decls {

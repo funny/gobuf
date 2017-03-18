@@ -24,13 +24,13 @@ const (
 	BYTES   = "Bytes"
 	STRING  = "String"
 	POINTER = "Pointer"
-	MESSAGE = "Message"
+	STRUCT  = "Struct"
 )
 
 type Doc struct {
-	Package  string
-	Enums    []*Enum
-	Messages []*Message
+	Package string
+	Enums   []*Enum
+	Structs []*Struct
 }
 
 type Enum struct {
@@ -44,7 +44,7 @@ type Value struct {
 	Value string
 }
 
-type Message struct {
+type Struct struct {
 	Name   string
 	Fields []*Field
 }

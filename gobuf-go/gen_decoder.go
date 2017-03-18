@@ -117,7 +117,7 @@ func genScalarUnmarshaler(o *writer, name string, t *gb.Type) {
 		o.Writef("	%s = string(b[n:n+int(l)])", name)
 		o.Writef("	n += int(l)")
 		o.Writef("}")
-	case gb.MESSAGE:
+	case gb.STRUCT:
 		if name[0] == '*' {
 			name = name[1:]
 		}

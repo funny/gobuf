@@ -90,7 +90,7 @@ func genScalarUnmarshaler(o *writer, name string, t *gb.Type) {
 		o.Writef("n = (%s)Gobuf.ReadBytes(out %s, b, n);", typeName(t), name)
 	case gb.STRING:
 		o.Writef("n = (%s)Gobuf.ReadString(out %s, b, n);", typeName(t), name)
-	case gb.MESSAGE:
+	case gb.STRUCT:
 		o.Writef("n = %s.Unmarshal(b, n);", name)
 	}
 }

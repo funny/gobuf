@@ -79,7 +79,7 @@ func genScalarMarshaler(o *writer, name string, t *gb.Type) {
 		o.Writef("n = Gobuf.WriteBytes(%s, b, n);", name)
 	case gb.STRING:
 		o.Writef("n = Gobuf.WriteString(%s, b, n);", name)
-	case gb.MESSAGE:
+	case gb.STRUCT:
 		o.Writef("n = %s.Marshal(b, n);", name)
 	}
 }

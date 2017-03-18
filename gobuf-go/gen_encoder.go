@@ -87,7 +87,7 @@ func genScalarMarshaler(o *writer, name string, t *gb.Type) {
 		o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
 		o.Writef("copy(b[n:], %s)", name)
 		o.Writef("n += len(%s)", name)
-	case gb.MESSAGE:
+	case gb.STRUCT:
 		if name[0] == '*' {
 			name = name[1:]
 		}

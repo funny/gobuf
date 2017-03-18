@@ -10,15 +10,12 @@ func genSizer(o *writer, name string, t *gb.Type, n int) {
 	if genArraySizer(o, name, t, n) {
 		return
 	}
-
 	if genMapSizer(o, name, t, n) {
 		return
 	}
-
 	if genPointerSizer(o, name, t) {
 		return
 	}
-
 	genScalarSizer(o, name, t)
 }
 
@@ -78,7 +75,7 @@ func genScalarSizer(o *writer, name string, t *gb.Type) {
 		o.Writef("size += gb.UvarintSize(uint64(%s))", name)
 	case gb.BYTES, gb.STRING:
 		o.Writef("size += gb.UvarintSize(uint64(len(%s))) + len(%s)", name, name)
-	case gb.MESSAGE:
+	case gb.STRUCT:
 		if name[0] == '*' {
 			name = name[1:]
 		}

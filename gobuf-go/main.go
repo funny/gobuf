@@ -28,27 +28,27 @@ func main() {
 	o.Writef(`import "github.com/funny/gobuf"`)
 	o.Writef(`import "encoding/binary"`)
 
-	for _, msg := range doc.Messages {
-		o.Writef("func (msg *%s) Size() int {", msg.Name)
+	for _, s := range doc.Structs {
+		o.Writef("func (s *%s) Size() int {", s.Name)
 		o.Writef("var size int")
-		for _, field := range msg.Fields {
-			genSizer(&o, "msg."+field.Name, field.Type, 1)
+		for _, field := range s.Fields {
+			genSizer(&o, "s."+field.Name, field.Type, 1)
 		}
 		o.Writef("return size")
 		o.Writef("}\n")
 
-		o.Writef("func (msg *%s) Marshal(b []byte) int {", msg.Name)
+		o.Writef("func (s *%s) Marshal(b []byte) int {", s.Name)
 		o.Writef("var n int")
-		for _, field := range msg.Fields {
-			genMarshaler(&o, "msg."+field.Name, field.Type, 1)
+		for _, field := range s.Fields {
+			genMarshaler(&o, "s."+field.Name, field.Type, 1)
 		}
 		o.Writef("return n")
 		o.Writef("}\n")
 
-		o.Writef("func (msg *%s) Unmarshal(b []byte) int {", msg.Name)
+		o.Writef("func (s *%s) Unmarshal(b []byte) int {", s.Name)
 		o.Writef("var n int")
-		for _, field := range msg.Fields {
-			genUnmarshaler(&o, "msg."+field.Name, field.Type, 1)
+		for _, field := range s.Fields {
+			genUnmarshaler(&o, "s."+field.Name, field.Type, 1)
 		}
 		o.Writef("return n")
 		o.Writef("}\n")
