@@ -23,6 +23,9 @@ func main() {
 
 	var o writer
 
+	o.Writef("using System;")
+	o.Writef("using System.Collections.Generic;")
+
 	for _, s := range doc.Structs {
 		o.Writef("class %s {", s.Name)
 
@@ -31,7 +34,7 @@ func main() {
 		}
 
 		o.Writef("public int Size() {")
-		o.Writef("int size;")
+		o.Writef("int size = 0;")
 		for _, field := range s.Fields {
 			genSizer(&o, "this."+field.Name, field.Type, 1)
 		}
@@ -84,6 +87,10 @@ func (w *writer) Writef(format string, args ...interface{}) {
 	w.WriteByte('\n')
 }
 
+func isNullable(t *parser.Type) bool {
+	return t.Kind == parser.POINTER && t.Elem.Kind != parser.STRUCT && t.Elem.Kind != parser.STRING
+}
+
 func typeName(t *parser.Type) string {
 	if t.Name != "" {
 		return t.Name
@@ -125,12 +132,12 @@ func typeName(t *parser.Type) string {
 		if t.Elem.Kind == parser.STRUCT {
 			return typeName(t.Elem)
 		}
+		if t.Elem.Kind == parser.STRING {
+			return "string"
+		}
 		return fmt.Sprintf("Nullable<%s>", typeName(t.Elem))
 	case parser.ARRAY:
-		if t.Len != 0 {
-			return fmt.Sprintf("%s[%d]", t.Len, typeName(t.Elem))
-		}
-		return fmt.Sprintf("%s[]", typeName(t.Elem))
+		return fmt.Sprintf("List<%s>", typeName(t.Elem))
 	}
 	return ""
 }

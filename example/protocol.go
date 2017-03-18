@@ -27,6 +27,7 @@ type ScalarTypes struct {
 	Float64 float64
 	String  string
 	Bytes   []byte
+	Bool    bool
 }
 
 type CompositeTypes struct {

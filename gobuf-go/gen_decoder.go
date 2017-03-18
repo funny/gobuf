@@ -72,6 +72,9 @@ func genPointerUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 
 func genScalarUnmarshaler(o *writer, name string, t *parser.Type) {
 	switch t.Kind {
+	case parser.BOOL:
+		o.Writef("%s = %s(b[n] == 1)", name, typeName(t))
+		o.Writef("n += 1")
 	case parser.INT8, parser.UINT8:
 		o.Writef("%s = %s(b[n])", name, typeName(t))
 		o.Writef("n += 1")

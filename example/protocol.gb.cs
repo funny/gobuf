@@ -14,11 +14,12 @@ class ScalarTypes {
 	public double Float64;
 	public string String;
 	public byte[] Bytes;
+	public bool Bool;
 	public int Size() {
 		int size;
 		size += 1;
-		size += Gobuf.VarintSize((long)this.Int);
-		size += Gobuf.UvarintSize((ulong)this.Uint);
+		size += Gobuf.VarintSize(this.Int);
+		size += Gobuf.UvarintSize(this.Uint);
 		size += 1;
 		size += 1;
 		size += 2;
@@ -31,48 +32,47 @@ class ScalarTypes {
 		size += 8;
 		size += Gobuf.StringSize(this.String);
 		size += Gobuf.UvarintSize((ulong)this.Bytes.Length) + this.Bytes.Length;
+		size += 1;
 		return size;
 	}
 	public int Marshal(byte[] b, int n) {
-		b[n] = (byte)msg.Byte;
-		n += 1;
-		n = Gobuf.WriteVarint((long)msg.Int, b, n);
-		n = Gobuf.WriteUvarint((ulong)msg.Uint, b, n);
-		b[n] = (byte)msg.Int8;
-		n += 1;
-		b[n] = (byte)msg.Uint8;
-		n += 1;
-		n = Gobuf.WriteUint16((ushort)msg.Int16, b, n);
-		n = Gobuf.WriteUint16((ushort)msg.Uint16, b, n);
-		n = Gobuf.WriteUint32((long)msg.Int32, b, n);
-		n = Gobuf.WriteUint32((long)msg.Uint32, b, n);
-		n = Gobuf.WriteUint64((ulong)msg.Int64, b, n);
-		n = Gobuf.WriteUint64((ulong)msg.Uint64, b, n);
-		n = Gobuf.WriteFloat32((float)msg.Float32, b, n);
-		n = Gobuf.WriteFloat64((double)msg.Float64, b, n);
-		n = Gobuf.WriteString(msg.String, b, n);
-		n = Gobuf.WriteBytes(msg.Bytes, b, n);
+		b[n++] = (byte)this.Byte;
+		Gobuf.WriteVarint(this.Int, b, ref n);
+		Gobuf.WriteUvarint(this.Uint, b, ref n);
+		b[n++] = (byte)this.Int8;
+		b[n++] = (byte)this.Uint8;
+		Gobuf.WriteUint16((short)this.Int16, b, ref n);
+		Gobuf.WriteUint16((ushort)this.Uint16, b, ref n);
+		Gobuf.WriteUint32((int)this.Int32, b, ref n);
+		Gobuf.WriteUint32((uint)this.Uint32, b, ref n);
+		Gobuf.WriteUint64((long)this.Int64, b, ref n);
+		Gobuf.WriteUint64((ulong)this.Uint64, b, ref n);
+		Gobuf.WriteFloat32(this.Float32, b, ref n);
+		Gobuf.WriteFloat64(this.Float64, b, ref n);
+		Gobuf.WriteString(this.String, b, ref n);
+		Gobuf.WriteBytes(this.Bytes, b, ref n);
+		b[n++] = this.Bool ? 1 : 0;
 		return n;
 	}
 	public int Unmarshal(byte[] b, int n) {
-		msg.Byte = (byte)b[n];
-		n += 1;
-		n = (long)Gobuf.ReadVarint(out msg.Int, b, n);
-		n = (ulong)Gobuf.ReadUvarint(out msg.Uint, b, n);
-		msg.Int8 = (sbyte)b[n];
-		n += 1;
-		msg.Uint8 = (byte)b[n];
-		n += 1;
-		n = (short)Gobuf.ReadUint16(out msg.Int16, b, n);
-		n = (ushort)Gobuf.ReadUint16(out msg.Uint16, b, n);
-		n = (int)Gobuf.ReadUint32(out msg.Int32, b, n);
-		n = (uint)Gobuf.ReadUint32(out msg.Uint32, b, n);
-		n = (long)Gobuf.ReadUint64(out msg.Int64, b, n);
-		n = (ulong)Gobuf.ReadUint64(out msg.Uint64, b, n);
-		n = (float)Gobuf.ReadFloat32(out msg.Float32, b, n);
-		n = (double)Gobuf.ReadFloat64(out msg.Float64, b, n);
-		n = (string)Gobuf.ReadString(out msg.String, b, n);
-		n = (byte[])Gobuf.ReadBytes(out msg.Bytes, b, n);
+		this.Byte = (byte)b[n++];
+		this.Byte = Gobuf.ReadUvarint(b, ref n);
+		this.Int = Gobuf.ReadVarint(b, ref n);
+		this.Int8 = (sbyte)b[n++];
+		this.Int8 = Gobuf.ReadUvarint(b, ref n);
+		this.Uint8 = (byte)b[n++];
+		this.Uint8 = Gobuf.ReadUvarint(b, ref n);
+		this.Int16 = (short)Gobuf.ReadUint16(b, ref n);
+		this.Uint16 = (ushort)Gobuf.ReadUint16(b, ref n);
+		this.Int32 = (int)Gobuf.ReadUint32(b, ref n);
+		this.Uint32 = (uint)Gobuf.ReadUint32(b, ref n);
+		this.Int64 = (long)Gobuf.ReadUint64(b, ref n);
+		this.Uint64 = (ulong)Gobuf.ReadUint64(b, ref n);
+		this.Float32 = Gobuf.ReadFloat32(b, ref n);
+		this.Float64 = Gobuf.ReadFloat64(b, ref n);
+		this.String = Gobuf.ReadString(b, ref n);
+		this.Bytes = Gobuf.ReadBytes(b, ref n);
+		this.Bool = b[n++] == 1;
 		return n;
 	}
 }
@@ -113,11 +113,11 @@ class CompositeTypes {
 		int size;
 		size += 1;
 		if (this.IntPtr != null) {
-			size += Gobuf.VarintSize((long)this.IntPtr);
+			size += Gobuf.VarintSize(this.IntPtr);
 		}
 		size += 1;
 		if (this.UintPtr != null) {
-			size += Gobuf.UvarintSize((ulong)this.UintPtr);
+			size += Gobuf.UvarintSize(this.UintPtr);
 		}
 		size += 1;
 		if (this.Int8Ptr != null) {
@@ -165,11 +165,11 @@ class CompositeTypes {
 		}
 		size += Gobuf.UvarintSize((ulong)this.IntArray.Length);
 		for (var i1 = 0; i1 < this.IntArray.Length; i1 ++) {
-			size += Gobuf.VarintSize((long)this.IntArray[i1]);
+			size += Gobuf.VarintSize(this.IntArray[i1]);
 		}
 		size += Gobuf.UvarintSize((ulong)this.UintArray.Length);
 		for (var i1 = 0; i1 < this.UintArray.Length; i1 ++) {
-			size += Gobuf.UvarintSize((ulong)this.UintArray[i1]);
+			size += Gobuf.UvarintSize(this.UintArray[i1]);
 		}
 		size += Gobuf.UvarintSize((ulong)this.Int8Array.Length) + this.Int8Array.Length * 1;
 		size += Gobuf.UvarintSize((ulong)this.Uint8Array.Length) + this.Uint8Array.Length;
@@ -210,10 +210,10 @@ class CompositeTypes {
 		}
 		size += Gobuf.UvarintSize((ulong)this.IntMap.Length);
 		foreach (var item1 in this.IntMap) {
-			size += Gobuf.VarintSize((long)item1.Key);
+			size += Gobuf.VarintSize(item1.Key);
 			size += Gobuf.UvarintSize((ulong)item1.Value.Length);
 			foreach (var item2 in item1.Value) {
-				size += Gobuf.VarintSize((long)item2.Key);
+				size += Gobuf.VarintSize(item2.Key);
 				size += Gobuf.UvarintSize((ulong)item2.Value.Length);
 				for (var i3 = 0; i3 < item2.Value.Length; i3 ++) {
 					size += 1;
@@ -226,208 +226,173 @@ class CompositeTypes {
 		return size;
 	}
 	public int Marshal(byte[] b, int n) {
-		if (msg.IntPtr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteVarint((long)msg.IntPtr, b, n);
+		if (this.IntPtr != null) {
+			b[n++] = 1;
+			Gobuf.WriteVarint(this.IntPtr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.UintPtr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUvarint((ulong)msg.UintPtr, b, n);
+		if (this.UintPtr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUvarint(this.UintPtr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Int8Ptr != null) {
-			b[n] = 1;
-			n ++;
-			b[n] = (byte)msg.Int8Ptr;
-			n += 1;
+		if (this.Int8Ptr != null) {
+			b[n++] = 1;
+			b[n++] = (byte)this.Int8Ptr;
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Uint8Ptr != null) {
-			b[n] = 1;
-			n ++;
-			b[n] = (byte)msg.Uint8Ptr;
-			n += 1;
+		if (this.Uint8Ptr != null) {
+			b[n++] = 1;
+			b[n++] = (byte)this.Uint8Ptr;
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Int16Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint16((ushort)msg.Int16Ptr, b, n);
+		if (this.Int16Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint16((short)this.Int16Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Uint16Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint16((ushort)msg.Uint16Ptr, b, n);
+		if (this.Uint16Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint16((ushort)this.Uint16Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Int32Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint32((long)msg.Int32Ptr, b, n);
+		if (this.Int32Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint32((int)this.Int32Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Uint32Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint32((long)msg.Uint32Ptr, b, n);
+		if (this.Uint32Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint32((uint)this.Uint32Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Int64Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint64((ulong)msg.Int64Ptr, b, n);
+		if (this.Int64Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint64((long)this.Int64Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Uint64Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteUint64((ulong)msg.Uint64Ptr, b, n);
+		if (this.Uint64Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteUint64((ulong)this.Uint64Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Float32Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteFloat32((float)msg.Float32Ptr, b, n);
+		if (this.Float32Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteFloat32(this.Float32Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.Float64Ptr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteFloat64((double)msg.Float64Ptr, b, n);
+		if (this.Float64Ptr != null) {
+			b[n++] = 1;
+			Gobuf.WriteFloat64(this.Float64Ptr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		if (msg.StringPtr != null) {
-			b[n] = 1;
-			n ++;
-			n = Gobuf.WriteString(msg.StringPtr, b, n);
+		if (this.StringPtr != null) {
+			b[n++] = 1;
+			Gobuf.WriteString(this.StringPtr, b, ref n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.IntArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.IntArray.Length; i1 ++) {
-			n = Gobuf.WriteVarint((long)msg.IntArray[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.IntArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.IntArray.Length; i1 ++) {
+			Gobuf.WriteVarint(this.IntArray[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.UintArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.UintArray.Length; i1 ++) {
-			n = Gobuf.WriteUvarint((ulong)msg.UintArray[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.UintArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.UintArray.Length; i1 ++) {
+			Gobuf.WriteUvarint(this.UintArray[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Int8Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Int8Array.Length; i1 ++) {
-			b[n] = (byte)msg.Int8Array[i1];
-			n += 1;
+		Gobuf.WriteUvarint((ulong)this.Int8Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Int8Array.Length; i1 ++) {
+			b[n++] = (byte)this.Int8Array[i1];
 		}
-		n = Gobuf.WriteBytes(msg.Uint8Array, b, n);
-		n = Gobuf.WriteUvarint((ulong)msg.Int16Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Int16Array.Length; i1 ++) {
-			n = Gobuf.WriteUint16((ushort)msg.Int16Array[i1], b, n);
+		Gobuf.WriteBytes(this.Uint8Array, b, ref n);
+		Gobuf.WriteUvarint((ulong)this.Int16Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Int16Array.Length; i1 ++) {
+			Gobuf.WriteUint16((short)this.Int16Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Uint16Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Uint16Array.Length; i1 ++) {
-			n = Gobuf.WriteUint16((ushort)msg.Uint16Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Uint16Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Uint16Array.Length; i1 ++) {
+			Gobuf.WriteUint16((ushort)this.Uint16Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Int32Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Int32Array.Length; i1 ++) {
-			n = Gobuf.WriteUint32((long)msg.Int32Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Int32Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Int32Array.Length; i1 ++) {
+			Gobuf.WriteUint32((int)this.Int32Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Uint32Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Uint32Array.Length; i1 ++) {
-			n = Gobuf.WriteUint32((long)msg.Uint32Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Uint32Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Uint32Array.Length; i1 ++) {
+			Gobuf.WriteUint32((uint)this.Uint32Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Int64Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Int64Array.Length; i1 ++) {
-			n = Gobuf.WriteUint64((ulong)msg.Int64Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Int64Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Int64Array.Length; i1 ++) {
+			Gobuf.WriteUint64((long)this.Int64Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Uint64Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Uint64Array.Length; i1 ++) {
-			n = Gobuf.WriteUint64((ulong)msg.Uint64Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Uint64Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Uint64Array.Length; i1 ++) {
+			Gobuf.WriteUint64((ulong)this.Uint64Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Float32Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Float32Array.Length; i1 ++) {
-			n = Gobuf.WriteFloat32((float)msg.Float32Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Float32Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Float32Array.Length; i1 ++) {
+			Gobuf.WriteFloat32(this.Float32Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.Float64Array.Length, b, n);
-		for (var i1 = 0; i1 < msg.Float64Array.Length; i1 ++) {
-			n = Gobuf.WriteFloat64((double)msg.Float64Array[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.Float64Array.Length, b, ref n);
+		for (var i1 = 0; i1 < this.Float64Array.Length; i1 ++) {
+			Gobuf.WriteFloat64(this.Float64Array[i1], b, ref n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.StringArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.StringArray.Length; i1 ++) {
-			n = Gobuf.WriteString(msg.StringArray[i1], b, n);
+		Gobuf.WriteUvarint((ulong)this.StringArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.StringArray.Length; i1 ++) {
+			Gobuf.WriteString(this.StringArray[i1], b, ref n);
 		}
-		n = msg.Message.Marshal(b, n);
-		if (msg.MessagePtr != null) {
-			b[n] = 1;
-			n ++;
-			n = msg.MessagePtr.Marshal(b, n);
+		n = this.Message.Marshal(b, n);
+		if (this.MessagePtr != null) {
+			b[n++] = 1;
+			n = this.MessagePtr.Marshal(b, n);
 		} else {
-			b[n] = 0;
-			n ++;
+			b[n++] = 0;
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.MessageArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.MessageArray.Length; i1 ++) {
-			n = msg.MessageArray[i1].Marshal(b, n);
+		Gobuf.WriteUvarint((ulong)this.MessageArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.MessageArray.Length; i1 ++) {
+			n = this.MessageArray[i1].Marshal(b, n);
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.MessagePtrArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.MessagePtrArray.Length; i1 ++) {
-			if (msg.MessagePtrArray[i1] != null) {
-				b[n] = 1;
-				n ++;
-				n = msg.MessagePtrArray[i1].Marshal(b, n);
+		Gobuf.WriteUvarint((ulong)this.MessagePtrArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.MessagePtrArray.Length; i1 ++) {
+			if (this.MessagePtrArray[i1] != null) {
+				b[n++] = 1;
+				n = this.MessagePtrArray[i1].Marshal(b, n);
 			} else {
-				b[n] = 0;
-				n ++;
+				b[n++] = 0;
 			}
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.MessageArrayArray.Length, b, n);
-		for (var i1 = 0; i1 < msg.MessageArrayArray.Length; i1 ++) {
-			n = Gobuf.WriteUvarint((ulong)msg.MessageArrayArray[i1].Length, b, n);
-			for (var i2 = 0; i2 < msg.MessageArrayArray[i1].Length; i2 ++) {
-				n = msg.MessageArrayArray[i1][i2].Marshal(b, n);
+		Gobuf.WriteUvarint((ulong)this.MessageArrayArray.Length, b, ref n);
+		for (var i1 = 0; i1 < this.MessageArrayArray.Length; i1 ++) {
+			Gobuf.WriteUvarint((ulong)this.MessageArrayArray[i1].Length, b, ref n);
+			for (var i2 = 0; i2 < this.MessageArrayArray[i1].Length; i2 ++) {
+				n = this.MessageArrayArray[i1][i2].Marshal(b, n);
 			}
 		}
-		n = Gobuf.WriteUvarint((ulong)msg.IntMap.Length, b, n);
-		foreach (var item1 in msg.IntMap) {
-			n = Gobuf.WriteVarint((long)item1.Key, b, n);
-			n = Gobuf.WriteUvarint((ulong)item1.Value.Length, b, n);
+		Gobuf.WriteUvarint((ulong)this.IntMap.Length, b, ref n);
+		foreach (var item1 in this.IntMap) {
+			Gobuf.WriteVarint(item1.Key, b, ref n);
+			Gobuf.WriteUvarint((ulong)item1.Value.Length, b, ref n);
 			foreach (var item2 in item1.Value) {
-				n = Gobuf.WriteVarint((long)item2.Key, b, n);
-				n = Gobuf.WriteUvarint((ulong)item2.Value.Length, b, n);
+				Gobuf.WriteVarint(item2.Key, b, ref n);
+				Gobuf.WriteUvarint((ulong)item2.Value.Length, b, ref n);
 				for (var i3 = 0; i3 < item2.Value.Length; i3 ++) {
 					if (item2.Value[i3] != null) {
-						b[n] = 1;
-						n ++;
+						b[n++] = 1;
 						n = item2.Value[i3].Marshal(b, n);
 					} else {
-						b[n] = 0;
-						n ++;
+						b[n++] = 0;
 					}
 				}
 			}
@@ -435,292 +400,242 @@ class CompositeTypes {
 		return n;
 	}
 	public int Unmarshal(byte[] b, int n) {
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new long();
-			n = (long)Gobuf.ReadVarint(out val1, b, n);
-			msg.IntPtr = val1;
-		} else {
-			n += 1;
+			val1 = Gobuf.ReadVarint(b, ref n);
+			this.IntPtr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new ulong();
-			n = (ulong)Gobuf.ReadUvarint(out val1, b, n);
-			msg.UintPtr = val1;
-		} else {
-			n += 1;
+			this.UintPtr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new sbyte();
-			val1 = (sbyte)b[n];
-			n += 1;
-			msg.Int8Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (sbyte)b[n++];
+			val1 = Gobuf.ReadUvarint(b, ref n);
+			this.Int8Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new byte();
-			val1 = (byte)b[n];
-			n += 1;
-			msg.Uint8Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (byte)b[n++];
+			val1 = Gobuf.ReadUvarint(b, ref n);
+			this.Uint8Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new short();
-			n = (short)Gobuf.ReadUint16(out val1, b, n);
-			msg.Int16Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (short)Gobuf.ReadUint16(b, ref n);
+			this.Int16Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new ushort();
-			n = (ushort)Gobuf.ReadUint16(out val1, b, n);
-			msg.Uint16Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (ushort)Gobuf.ReadUint16(b, ref n);
+			this.Uint16Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new int();
-			n = (int)Gobuf.ReadUint32(out val1, b, n);
-			msg.Int32Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (int)Gobuf.ReadUint32(b, ref n);
+			this.Int32Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new uint();
-			n = (uint)Gobuf.ReadUint32(out val1, b, n);
-			msg.Uint32Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (uint)Gobuf.ReadUint32(b, ref n);
+			this.Uint32Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new long();
-			n = (long)Gobuf.ReadUint64(out val1, b, n);
-			msg.Int64Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (long)Gobuf.ReadUint64(b, ref n);
+			this.Int64Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new ulong();
-			n = (ulong)Gobuf.ReadUint64(out val1, b, n);
-			msg.Uint64Ptr = val1;
-		} else {
-			n += 1;
+			val1 = (ulong)Gobuf.ReadUint64(b, ref n);
+			this.Uint64Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new float();
-			n = (float)Gobuf.ReadFloat32(out val1, b, n);
-			msg.Float32Ptr = val1;
-		} else {
-			n += 1;
+			val1 = Gobuf.ReadFloat32(b, ref n);
+			this.Float32Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new double();
-			n = (double)Gobuf.ReadFloat64(out val1, b, n);
-			msg.Float64Ptr = val1;
-		} else {
-			n += 1;
+			val1 = Gobuf.ReadFloat64(b, ref n);
+			this.Float64Ptr = val1;
 		}
-		if (b[n] != 0) {
-			n += 1;
+		if (b[n++] != 0) {
 			var val1 = new string();
-			n = (string)Gobuf.ReadString(out val1, b, n);
-			msg.StringPtr = val1;
-		} else {
-			n += 1;
+			val1 = Gobuf.ReadString(b, ref n);
+			this.StringPtr = val1;
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.IntArray = new System.Collections.Generic.List<long>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.IntArray = new System.Collections.Generic.List<long>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (long)Gobuf.ReadVarint(out msg.IntArray[i1], b, n);
+				this.IntArray[i1] = Gobuf.ReadVarint(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.UintArray = new System.Collections.Generic.List<ulong>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.UintArray = new System.Collections.Generic.List<ulong>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (ulong)Gobuf.ReadUvarint(out msg.UintArray[i1], b, n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Int8Array = new System.Collections.Generic.List<sbyte>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Int8Array = new System.Collections.Generic.List<sbyte>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				msg.Int8Array[i1] = (sbyte)b[n];
-				n += 1;
+				this.Int8Array[i1] = (sbyte)b[n++];
+				this.Int8Array[i1] = Gobuf.ReadUvarint(b, ref n);
 			}
 		}
-		n = (byte[])Gobuf.ReadBytes(out msg.Uint8Array, b, n);
+		this.Uint8Array = Gobuf.ReadBytes(b, ref n);
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Int16Array = new System.Collections.Generic.List<short>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Int16Array = new System.Collections.Generic.List<short>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (short)Gobuf.ReadUint16(out msg.Int16Array[i1], b, n);
-			}
-		}
-		{
-			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Uint16Array = new System.Collections.Generic.List<ushort>();
-			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (ushort)Gobuf.ReadUint16(out msg.Uint16Array[i1], b, n);
+				this.Int16Array[i1] = (short)Gobuf.ReadUint16(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Int32Array = new System.Collections.Generic.List<int>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Uint16Array = new System.Collections.Generic.List<ushort>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (int)Gobuf.ReadUint32(out msg.Int32Array[i1], b, n);
+				this.Uint16Array[i1] = (ushort)Gobuf.ReadUint16(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Uint32Array = new System.Collections.Generic.List<uint>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Int32Array = new System.Collections.Generic.List<int>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (uint)Gobuf.ReadUint32(out msg.Uint32Array[i1], b, n);
+				this.Int32Array[i1] = (int)Gobuf.ReadUint32(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Int64Array = new System.Collections.Generic.List<long>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Uint32Array = new System.Collections.Generic.List<uint>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (long)Gobuf.ReadUint64(out msg.Int64Array[i1], b, n);
+				this.Uint32Array[i1] = (uint)Gobuf.ReadUint32(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Uint64Array = new System.Collections.Generic.List<ulong>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Int64Array = new System.Collections.Generic.List<long>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (ulong)Gobuf.ReadUint64(out msg.Uint64Array[i1], b, n);
+				this.Int64Array[i1] = (long)Gobuf.ReadUint64(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Float32Array = new System.Collections.Generic.List<float>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Uint64Array = new System.Collections.Generic.List<ulong>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (float)Gobuf.ReadFloat32(out msg.Float32Array[i1], b, n);
+				this.Uint64Array[i1] = (ulong)Gobuf.ReadUint64(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.Float64Array = new System.Collections.Generic.List<double>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Float32Array = new System.Collections.Generic.List<float>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (double)Gobuf.ReadFloat64(out msg.Float64Array[i1], b, n);
+				this.Float32Array[i1] = Gobuf.ReadFloat32(b, ref n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.StringArray = new System.Collections.Generic.List<string>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.Float64Array = new System.Collections.Generic.List<double>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = (string)Gobuf.ReadString(out msg.StringArray[i1], b, n);
+				this.Float64Array[i1] = Gobuf.ReadFloat64(b, ref n);
 			}
 		}
-		n = msg.Message.Unmarshal(b, n);
-		if (b[n] != 0) {
-			n += 1;
+		{
+			ulong l;
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.StringArray = new System.Collections.Generic.List<string>();
+			for (var i1 = 0; i1 < l; i1 ++) {
+				this.StringArray[i1] = Gobuf.ReadString(b, ref n);
+			}
+		}
+		n = this.Message.Unmarshal(b, n);
+		if (b[n++] != 0) {
 			var val1 = new ScalarTypes();
 			n = val1.Unmarshal(b, n);
-			msg.MessagePtr = val1;
-		} else {
-			n += 1;
+			this.MessagePtr = val1;
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.MessageArray = new System.Collections.Generic.List<ScalarTypes>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.MessageArray = new System.Collections.Generic.List<ScalarTypes>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				n = msg.MessageArray[i1].Unmarshal(b, n);
+				n = this.MessageArray[i1].Unmarshal(b, n);
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.MessagePtrArray = new System.Collections.Generic.List<ScalarTypes>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.MessagePtrArray = new System.Collections.Generic.List<ScalarTypes>();
 			for (var i1 = 0; i1 < l; i1 ++) {
-				if (b[n] != 0) {
-					n += 1;
+				if (b[n++] != 0) {
 					var val2 = new ScalarTypes();
 					n = val2.Unmarshal(b, n);
-					msg.MessagePtrArray[i1] = val2;
-				} else {
-					n += 1;
+					this.MessagePtrArray[i1] = val2;
 				}
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.MessageArrayArray = new System.Collections.Generic.List<ScalarTypes[]>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.MessageArrayArray = new System.Collections.Generic.List<ScalarTypes[]>();
 			for (var i1 = 0; i1 < l; i1 ++) {
 				{
 					ulong l;
-					n = Gobuf.ReadUvarint(out l, b, n);
-					msg.MessageArrayArray[i1] = new System.Collections.Generic.List<ScalarTypes>();
+					Gobuf.ReadUvarint(out l, b, ref n);
+					this.MessageArrayArray[i1] = new System.Collections.Generic.List<ScalarTypes>();
 					for (var i2 = 0; i2 < l; i2 ++) {
-						n = msg.MessageArrayArray[i1][i2].Unmarshal(b, n);
+						n = this.MessageArrayArray[i1][i2].Unmarshal(b, n);
 					}
 				}
 			}
 		}
 		{
 			ulong l;
-			n = Gobuf.ReadUvarint(out l, b, n);
-			msg.IntMap = System.Collections.Generic.Dictionary<long, Dictionary<long, ScalarTypes[]>>();
+			Gobuf.ReadUvarint(out l, b, ref n);
+			this.IntMap = System.Collections.Generic.Dictionary<long, Dictionary<long, ScalarTypes[]>>();
 			for (var i1 = 0; i1 < l; i1 ++) {
 				long key1;
 				Dictionary<long, ScalarTypes[]> val1;
-				n = (long)Gobuf.ReadVarint(out key1, b, n);
+				key1 = Gobuf.ReadVarint(b, ref n);
 				{
 					ulong l;
-					n = Gobuf.ReadUvarint(out l, b, n);
+					Gobuf.ReadUvarint(out l, b, ref n);
 					val1 = System.Collections.Generic.Dictionary<long, ScalarTypes[]>();
 					for (var i2 = 0; i2 < l; i2 ++) {
 						long key2;
 						ScalarTypes[] val2;
-						n = (long)Gobuf.ReadVarint(out key2, b, n);
+						key2 = Gobuf.ReadVarint(b, ref n);
 						{
 							ulong l;
-							n = Gobuf.ReadUvarint(out l, b, n);
+							Gobuf.ReadUvarint(out l, b, ref n);
 							val2 = new System.Collections.Generic.List<ScalarTypes>();
 							for (var i3 = 0; i3 < l; i3 ++) {
-								if (b[n] != 0) {
-									n += 1;
+								if (b[n++] != 0) {
 									var val4 = new ScalarTypes();
 									n = val4.Unmarshal(b, n);
 									val2[i3] = val4;
-								} else {
-									n += 1;
 								}
 							}
 						}
 						val1[key2] = val2;
 					}
 				}
-				msg.IntMap[key1] = val1;
+				this.IntMap[key1] = val1;
 			}
 		}
 		return n;

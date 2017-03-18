@@ -61,6 +61,9 @@ func genPointerMarshaler(o *writer, name string, t *parser.Type) bool {
 
 func genScalarMarshaler(o *writer, name string, t *parser.Type) {
 	switch t.Kind {
+	case parser.BOOL:
+		o.Writef("if %s { b[n] = 1; } else { b[n] = 0; }", name)
+		o.Writef("n += 1")
 	case parser.INT8, parser.UINT8:
 		o.Writef("b[n] = byte(%s)", name)
 		o.Writef("n += 1")

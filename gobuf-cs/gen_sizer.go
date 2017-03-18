@@ -23,10 +23,10 @@ func genArraySizer(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
 		elemSize := t.Elem.Size()
 		if elemSize != 0 {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length * %d;", name, name, elemSize)
+			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count) + %s.Count * %d;", name, name, elemSize)
 		} else {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length);", name)
-			o.Writef("for (var i%d = 0; i%d < %s.Length; i%d ++) {", n, n, name, n)
+			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count);", name)
+			o.Writef("for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
 			genSizer(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 			o.Writef("}")
 		}
@@ -40,9 +40,9 @@ func genMapSizer(o *writer, name string, t *parser.Type, n int) bool {
 		keySize := t.Key.Size()
 		elemSize := t.Elem.Size()
 		if keySize != 0 && elemSize != 0 {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length * (%d + %d);", name, name, keySize, elemSize)
+			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count) + %s.Count * (%d + %d);", name, name, keySize, elemSize)
 		} else {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length);", name)
+			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count);", name)
 			o.Writef("foreach (var item%d in %s) {", n, name)
 			genScalarSizer(o, fmt.Sprintf("item%d.Key", n), t.Key)
 			genSizer(o, fmt.Sprintf("item%d.Value", n), t.Elem, n+1)
@@ -54,9 +54,13 @@ func genMapSizer(o *writer, name string, t *parser.Type, n int) bool {
 
 func genPointerSizer(o *writer, name string, t *parser.Type) bool {
 	if t.Kind == parser.POINTER {
+		valName := name
+		if isNullable(t) {
+			valName += ".Value"
+		}
 		o.Writef("size += 1;")
 		o.Writef("if (%s != null) {", name)
-		genScalarSizer(o, name, t.Elem)
+		genScalarSizer(o, valName, t.Elem)
 		o.Writef("}")
 		return true
 	}
@@ -70,9 +74,9 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 	}
 	switch t.Kind {
 	case parser.INT:
-		o.Writef("size += Gobuf.VarintSize((long)%s);", name)
+		o.Writef("size += Gobuf.VarintSize(%s);", name)
 	case parser.UINT:
-		o.Writef("size += Gobuf.UvarintSize((ulong)%s);", name)
+		o.Writef("size += Gobuf.UvarintSize(%s);", name)
 	case parser.STRING:
 		o.Writef("size += Gobuf.StringSize(%s);", name)
 	case parser.BYTES:

@@ -20,6 +20,7 @@ func (s *ScalarTypes) Size() int {
 	size += 8
 	size += protocol_UvarintSize(uint64(len(s.String))) + len(s.String)
 	size += protocol_UvarintSize(uint64(len(s.Bytes))) + len(s.Bytes)
+	size += 1
 	return size
 }
 
@@ -55,6 +56,12 @@ func (s *ScalarTypes) Marshal(b []byte) int {
 	n += binary.PutUvarint(b[n:], uint64(len(s.Bytes)))
 	copy(b[n:], s.Bytes)
 	n += len(s.Bytes)
+	if s.Bool {
+		b[n] = 1
+	} else {
+		b[n] = 0
+	}
+	n += 1
 	return n
 }
 
@@ -105,6 +112,8 @@ func (s *ScalarTypes) Unmarshal(b []byte) int {
 		copy(s.Bytes, b[n:n+int(l)])
 		n += int(l)
 	}
+	s.Bool = bool(b[n] == 1)
+	n += 1
 	return n
 }
 
