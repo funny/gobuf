@@ -15,6 +15,35 @@ And it not only supports generate Go code but also C#.
 
 It has a good plugin mechanism, let you can add different programming language generation easily.
 
+Pipeline
+============
+
+```
++------------------+       +----------------------+        +--------------+          +-------------------+
+|                  |       |                      |        |              |          |                   |
+|  Go source file  +------->  Gobuf Command Line  +-------->    Plugin    +---------->  Target Language  |
+|                  |       |                      |        |              |          |                   |
++------------------+       +-----------+----------+  JSON  +--------------+  output  +-------------------+
+                                       |
+                                invoke |
+                                       |
+                           +-----------v----------+
+                           |                      |
+                           |     Type Analyzer    |
+                           |                      |
+                           +----------------------+
+```
+
+1. Gobuf command line tool analyze a Go source file.
+2. Gobuf output type informations to command line standard output.
+3. Plugin use type informations to generate target language source code.
+
+Example:
+
+```
+gobuf protocol.go | gobuf-cs > protocol.gb.cs
+```
+
 Types
 =====
 
