@@ -30,7 +30,12 @@ func main() {
 		o.Writef("class %s {", s.Name)
 
 		for _, field := range s.Fields {
-			o.Writef("public %s %s;", typeName(field.Type), field.Name)
+			if field.Type.Kind == parser.ARRAY && field.Type.Len != 0 {
+				o.Writef("public %s %s = new List<%s>(%d);",
+					typeName(field.Type), field.Name, typeName(field.Type.Elem), field.Type.Len)
+			} else {
+				o.Writef("public %s %s;", typeName(field.Type), field.Name)
+			}
 		}
 
 		o.Writef("public int Size() {")

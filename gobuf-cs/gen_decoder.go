@@ -22,7 +22,9 @@ func genUnmarshaler(o *writer, name string, t *parser.Type, n int) {
 func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
 		o.Writef("{")
-		o.Writef("	%s = new %s((int)Gobuf.ReadUvarint(b, ref n));", name, typeName(t))
+		if t.Len == 0 {
+			o.Writef("	%s = new %s((int)Gobuf.ReadUvarint(b, ref n));", name, typeName(t))
+		}
 		o.Writef("	for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
 		genUnmarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 		o.Writef("	}")

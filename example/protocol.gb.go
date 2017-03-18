@@ -193,6 +193,10 @@ func (s *CompositeTypes) Size() int {
 	for i1 := 0; i1 < len(s.StringArray); i1++ {
 		size += protocol_UvarintSize(uint64(len(s.StringArray[i1]))) + len(s.StringArray[i1])
 	}
+	for i1 := 0; i1 < len(s.FixLenIntArray); i1++ {
+		size += protocol_VarintSize(int64(s.FixLenIntArray[i1]))
+	}
+	size += 10 * 4
 	size += s.Message.Size()
 	size += 1
 	if s.MessagePtr != nil {
@@ -413,6 +417,13 @@ func (s *CompositeTypes) Marshal(b []byte) int {
 		n += binary.PutUvarint(b[n:], uint64(len(s.StringArray[i1])))
 		copy(b[n:], s.StringArray[i1])
 		n += len(s.StringArray[i1])
+	}
+	for i1 := 0; i1 < len(s.FixLenIntArray); i1++ {
+		n += binary.PutVarint(b[n:], int64(s.FixLenIntArray[i1]))
+	}
+	for i1 := 0; i1 < len(s.FixLenInt32Array); i1++ {
+		binary.LittleEndian.PutUint32(b[n:], uint32(s.FixLenInt32Array[i1]))
+		n += 4
 	}
 	n += s.Message.Marshal(b[n:])
 	if s.MessagePtr != nil {
@@ -719,6 +730,21 @@ func (s *CompositeTypes) Unmarshal(b []byte) int {
 				s.StringArray[i1] = string(b[n : n+int(l)])
 				n += int(l)
 			}
+		}
+	}
+	{
+		for i1 := 0; i1 < 10; i1++ {
+			{
+				v, x := binary.Varint(b[n:])
+				s.FixLenIntArray[i1] = int(v)
+				n += x
+			}
+		}
+	}
+	{
+		for i1 := 0; i1 < 10; i1++ {
+			s.FixLenInt32Array[i1] = int32(binary.LittleEndian.Uint32(b[n:]))
+			n += 4
 		}
 	}
 	n += s.Message.Unmarshal(b[n:])

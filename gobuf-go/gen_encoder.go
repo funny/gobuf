@@ -24,7 +24,9 @@ func genMarshaler(o *writer, name string, t *parser.Type, n int) {
 
 func genArrayMarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
-		o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
+		if t.Len == 0 {
+			o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
+		}
 		o.Writef("for i%d := 0; i%d < len(%s); i%d ++ {", n, n, name, n)
 		genMarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 		o.Writef("}")

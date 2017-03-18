@@ -21,7 +21,9 @@ func genMarshaler(o *writer, name string, t *parser.Type, n int) {
 
 func genArrayMarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
-		o.Writef("Gobuf.WriteUvarint((ulong)%s.Count, b, ref n);", name)
+		if t.Len == 0 {
+			o.Writef("Gobuf.WriteUvarint((ulong)%s.Count, b, ref n);", name)
+		}
 		o.Writef("for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
 		genMarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 		o.Writef("}")

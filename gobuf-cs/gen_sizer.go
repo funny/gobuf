@@ -23,9 +23,15 @@ func genArraySizer(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
 		elemSize := t.Elem.Size()
 		if elemSize != 0 {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count) + %s.Count * %d;", name, name, elemSize)
+			if t.Len == 0 {
+				o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count) + %s.Count * %d;", name, name, elemSize)
+			} else {
+				o.Writef("size += %d * %d;", t.Len, elemSize)
+			}
 		} else {
-			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count);", name)
+			if t.Len == 0 {
+				o.Writef("size += Gobuf.UvarintSize((ulong)%s.Count);", name)
+			}
 			o.Writef("for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
 			genSizer(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 			o.Writef("}")

@@ -25,10 +25,14 @@ func genUnmarshaler(o *writer, name string, t *parser.Type, n int) {
 func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
 		o.Writef("{")
-		o.Writef("	l, x := binary.Uvarint(b[n:])")
-		o.Writef("	n += x")
-		o.Writef("	%s = make(%s, l)", name, typeName(t))
-		o.Writef("	for i%d := 0; i%d < int(l); i%d ++ {", n, n, n)
+		if t.Len == 0 {
+			o.Writef("	l, x := binary.Uvarint(b[n:])")
+			o.Writef("	n += x")
+			o.Writef("	%s = make(%s, l)", name, typeName(t))
+			o.Writef("	for i%d := 0; i%d < int(l); i%d ++ {", n, n, n)
+		} else {
+			o.Writef("	for i%d := 0; i%d < %d; i%d ++ {", n, n, t.Len, n)
+		}
 		genUnmarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
 		o.Writef("	}")
 		o.Writef("}")
