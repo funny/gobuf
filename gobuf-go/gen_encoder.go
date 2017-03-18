@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf"
+	"github.com/funny/gobuf/gb"
 )
 
-func genMarshaler(o *writer, name string, t *gobuf.Type, n int) {
+func genMarshaler(o *writer, name string, t *gb.Type, n int) {
 	if genArrayMarshaler(o, name, t, n) {
 		return
 	}
@@ -22,8 +22,8 @@ func genMarshaler(o *writer, name string, t *gobuf.Type, n int) {
 	genScalarMarshaler(o, name, t)
 }
 
-func genArrayMarshaler(o *writer, name string, t *gobuf.Type, n int) bool {
-	if t.Kind == gobuf.ARRAY {
+func genArrayMarshaler(o *writer, name string, t *gb.Type, n int) bool {
+	if t.Kind == gb.ARRAY {
 		o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
 		o.Writef("for i%d := 0; i%d < len(%s); i%d ++ {", n, n, name, n)
 		genMarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
@@ -33,8 +33,8 @@ func genArrayMarshaler(o *writer, name string, t *gobuf.Type, n int) bool {
 	return false
 }
 
-func genMapMarshaler(o *writer, name string, t *gobuf.Type, n int) bool {
-	if t.Kind == gobuf.MAP {
+func genMapMarshaler(o *writer, name string, t *gb.Type, n int) bool {
+	if t.Kind == gb.MAP {
 		o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
 		o.Writef("for key%d, val%d := range %s {", n, n, name)
 		genScalarMarshaler(o, fmt.Sprintf("key%d", n), t.Key)
@@ -44,8 +44,8 @@ func genMapMarshaler(o *writer, name string, t *gobuf.Type, n int) bool {
 	return false
 }
 
-func genPointerMarshaler(o *writer, name string, t *gobuf.Type) bool {
-	if t.Kind == gobuf.POINTER {
+func genPointerMarshaler(o *writer, name string, t *gb.Type) bool {
+	if t.Kind == gb.POINTER {
 		o.Writef("if %s != nil {", name)
 		o.Writef("	b[n] = 1")
 		o.Writef("	n ++")
@@ -59,35 +59,35 @@ func genPointerMarshaler(o *writer, name string, t *gobuf.Type) bool {
 	return false
 }
 
-func genScalarMarshaler(o *writer, name string, t *gobuf.Type) {
+func genScalarMarshaler(o *writer, name string, t *gb.Type) {
 	switch t.Kind {
-	case gobuf.INT8, gobuf.UINT8:
+	case gb.INT8, gb.UINT8:
 		o.Writef("b[n] = byte(%s)", name)
 		o.Writef("n += 1")
-	case gobuf.INT16, gobuf.UINT16:
+	case gb.INT16, gb.UINT16:
 		o.Writef("binary.LittleEndian.PutUint16(b[n:], uint16(%s))", name)
 		o.Writef("n += 2")
-	case gobuf.INT32, gobuf.UINT32:
+	case gb.INT32, gb.UINT32:
 		o.Writef("binary.LittleEndian.PutUint32(b[n:], uint32(%s))", name)
 		o.Writef("n += 4")
-	case gobuf.INT64, gobuf.UINT64:
+	case gb.INT64, gb.UINT64:
 		o.Writef("binary.LittleEndian.PutUint64(b[n:], uint64(%s))", name)
 		o.Writef("n += 8")
-	case gobuf.FLOAT32:
-		o.Writef("gobuf.PutFloat32(b[n:], float32(%s))", name)
+	case gb.FLOAT32:
+		o.Writef("gb.PutFloat32(b[n:], float32(%s))", name)
 		o.Writef("n += 4")
-	case gobuf.FLOAT64:
-		o.Writef("gobuf.PutFloat64(b[n:], float64(%s))", name)
+	case gb.FLOAT64:
+		o.Writef("gb.PutFloat64(b[n:], float64(%s))", name)
 		o.Writef("n += 8")
-	case gobuf.INT:
+	case gb.INT:
 		o.Writef("n += binary.PutVarint(b[n:], int64(%s))", name)
-	case gobuf.UINT:
+	case gb.UINT:
 		o.Writef("n += binary.PutUvarint(b[n:], uint64(%s))", name)
-	case gobuf.BYTES, gobuf.STRING:
+	case gb.BYTES, gb.STRING:
 		o.Writef("n += binary.PutUvarint(b[n:], uint64(len(%s)))", name)
 		o.Writef("copy(b[n:], %s)", name)
 		o.Writef("n += len(%s)", name)
-	case gobuf.MESSAGE:
+	case gb.MESSAGE:
 		if name[0] == '*' {
 			name = name[1:]
 		}

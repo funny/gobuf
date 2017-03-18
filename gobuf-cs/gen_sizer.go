@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/funny/gobuf"
+	"github.com/funny/gobuf/gb"
 )
 
-func genSizer(o *writer, name string, t *gobuf.Type, n int) {
+func genSizer(o *writer, name string, t *gb.Type, n int) {
 	if genArraySizer(o, name, t, n) {
 		return
 	}
@@ -19,8 +19,8 @@ func genSizer(o *writer, name string, t *gobuf.Type, n int) {
 	genScalarSizer(o, name, t)
 }
 
-func genArraySizer(o *writer, name string, t *gobuf.Type, n int) bool {
-	if t.Kind == gobuf.ARRAY {
+func genArraySizer(o *writer, name string, t *gb.Type, n int) bool {
+	if t.Kind == gb.ARRAY {
 		elemSize := t.Elem.Size()
 		if elemSize != 0 {
 			o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length * %d;", name, name, elemSize)
@@ -35,8 +35,8 @@ func genArraySizer(o *writer, name string, t *gobuf.Type, n int) bool {
 	return false
 }
 
-func genMapSizer(o *writer, name string, t *gobuf.Type, n int) bool {
-	if t.Kind == gobuf.MAP {
+func genMapSizer(o *writer, name string, t *gb.Type, n int) bool {
+	if t.Kind == gb.MAP {
 		keySize := t.Key.Size()
 		elemSize := t.Elem.Size()
 		if keySize != 0 && elemSize != 0 {
@@ -52,8 +52,8 @@ func genMapSizer(o *writer, name string, t *gobuf.Type, n int) bool {
 	return false
 }
 
-func genPointerSizer(o *writer, name string, t *gobuf.Type) bool {
-	if t.Kind == gobuf.POINTER {
+func genPointerSizer(o *writer, name string, t *gb.Type) bool {
+	if t.Kind == gb.POINTER {
 		o.Writef("size += 1;")
 		o.Writef("if (%s != null) {", name)
 		genScalarSizer(o, name, t.Elem)
@@ -63,21 +63,21 @@ func genPointerSizer(o *writer, name string, t *gobuf.Type) bool {
 	return false
 }
 
-func genScalarSizer(o *writer, name string, t *gobuf.Type) {
+func genScalarSizer(o *writer, name string, t *gb.Type) {
 	if t.Size() != 0 {
 		o.Writef("size += %d;", t.Size())
 		return
 	}
 	switch t.Kind {
-	case gobuf.INT:
+	case gb.INT:
 		o.Writef("size += Gobuf.VarintSize((long)%s);", name)
-	case gobuf.UINT:
+	case gb.UINT:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s);", name)
-	case gobuf.STRING:
+	case gb.STRING:
 		o.Writef("size += Gobuf.StringSize(%s);", name)
-	case gobuf.BYTES:
+	case gb.BYTES:
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length;", name, name)
-	case gobuf.MESSAGE:
+	case gb.MESSAGE:
 		o.Writef("size += %s.Size();", name)
 	}
 }

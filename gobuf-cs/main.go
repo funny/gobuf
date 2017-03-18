@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 
-	"strings"
+	"github.com/funny/gobuf/gb"
 
-	"github.com/funny/gobuf"
+	"strings"
 )
 
 func main() {
-	var doc gobuf.Doc
+	var doc gb.Doc
 
 	decoder := json.NewDecoder(os.Stdin)
 
@@ -84,49 +84,49 @@ func (w *writer) Writef(format string, args ...interface{}) {
 	w.WriteByte('\n')
 }
 
-func typeName(t *gobuf.Type) string {
+func typeName(t *gb.Type) string {
 	if t.Name != "" {
 		return t.Name
 	}
 	switch t.Kind {
-	case gobuf.INT:
+	case gb.INT:
 		return "long"
-	case gobuf.UINT:
+	case gb.UINT:
 		return "ulong"
-	case gobuf.INT8:
+	case gb.INT8:
 		return "sbyte"
-	case gobuf.UINT8:
+	case gb.UINT8:
 		return "byte"
-	case gobuf.INT16:
+	case gb.INT16:
 		return "short"
-	case gobuf.UINT16:
+	case gb.UINT16:
 		return "ushort"
-	case gobuf.INT32:
+	case gb.INT32:
 		return "int"
-	case gobuf.UINT32:
+	case gb.UINT32:
 		return "uint"
-	case gobuf.INT64:
+	case gb.INT64:
 		return "long"
-	case gobuf.UINT64:
+	case gb.UINT64:
 		return "ulong"
-	case gobuf.FLOAT32:
+	case gb.FLOAT32:
 		return "float"
-	case gobuf.FLOAT64:
+	case gb.FLOAT64:
 		return "double"
-	case gobuf.STRING:
+	case gb.STRING:
 		return "string"
-	case gobuf.BYTES:
+	case gb.BYTES:
 		return "byte[]"
-	case gobuf.BOOL:
+	case gb.BOOL:
 		return "bool"
-	case gobuf.MAP:
+	case gb.MAP:
 		return fmt.Sprintf("Dictionary<%s, %s>", typeName(t.Key), typeName(t.Elem))
-	case gobuf.POINTER:
-		if t.Elem.Kind == gobuf.MESSAGE {
+	case gb.POINTER:
+		if t.Elem.Kind == gb.MESSAGE {
 			return typeName(t.Elem)
 		}
 		return fmt.Sprintf("Nullable<%s>", typeName(t.Elem))
-	case gobuf.ARRAY:
+	case gb.ARRAY:
 		if t.Len != 0 {
 			return fmt.Sprintf("%s[%d]", t.Len, typeName(t.Elem))
 		}

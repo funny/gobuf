@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 
-	"go/format"
+	"github.com/funny/gobuf/gb"
 
-	"github.com/funny/gobuf"
+	"go/format"
 )
 
 func main() {
-	var doc gobuf.Doc
+	var doc gb.Doc
 
 	decoder := json.NewDecoder(os.Stdin)
 
@@ -76,46 +76,46 @@ func (w *writer) Writef(format string, args ...interface{}) {
 	w.WriteByte('\n')
 }
 
-func typeName(t *gobuf.Type) string {
+func typeName(t *gb.Type) string {
 	if t.Name != "" {
 		return t.Name
 	}
 	switch t.Kind {
-	case gobuf.INT:
+	case gb.INT:
 		return "int"
-	case gobuf.UINT:
+	case gb.UINT:
 		return "uint"
-	case gobuf.INT8:
+	case gb.INT8:
 		return "int8"
-	case gobuf.UINT8:
+	case gb.UINT8:
 		return "uint8"
-	case gobuf.INT16:
+	case gb.INT16:
 		return "int16"
-	case gobuf.UINT16:
+	case gb.UINT16:
 		return "uint16"
-	case gobuf.INT32:
+	case gb.INT32:
 		return "int32"
-	case gobuf.UINT32:
+	case gb.UINT32:
 		return "uint32"
-	case gobuf.INT64:
+	case gb.INT64:
 		return "int64"
-	case gobuf.UINT64:
+	case gb.UINT64:
 		return "uint64"
-	case gobuf.FLOAT32:
+	case gb.FLOAT32:
 		return "float32"
-	case gobuf.FLOAT64:
+	case gb.FLOAT64:
 		return "float64"
-	case gobuf.STRING:
+	case gb.STRING:
 		return "string"
-	case gobuf.BYTES:
+	case gb.BYTES:
 		return "[]byte"
-	case gobuf.BOOL:
+	case gb.BOOL:
 		return "bool"
-	case gobuf.MAP:
+	case gb.MAP:
 		return fmt.Sprintf("map[%s]%s", typeName(t.Key), typeName(t.Elem))
-	case gobuf.POINTER:
+	case gb.POINTER:
 		return fmt.Sprintf("*%s", typeName(t.Elem))
-	case gobuf.ARRAY:
+	case gb.ARRAY:
 		if t.Len != 0 {
 			return fmt.Sprintf("[%d]%s", t.Len, typeName(t.Elem))
 		}

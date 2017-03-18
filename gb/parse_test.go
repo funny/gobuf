@@ -1,4 +1,4 @@
-package gobuf
+package gb
 
 import (
 	"go/ast"
