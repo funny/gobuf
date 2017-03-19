@@ -1,5 +1,3 @@
-NOTE: This project still in very early stage, don't use in production environment.
-
 What's is Gobuf?
 ================
 
