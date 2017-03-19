@@ -111,11 +111,16 @@ func genScalarUnmarshaler(o *writer, name string, t *parser.Type) {
 		o.Writef("}")
 	case parser.BYTES:
 		o.Writef("{")
-		o.Writef("	l, x := binary.Uvarint(b[n:])")
-		o.Writef("	n += x")
-		o.Writef("	%s = make([]byte, l)", name)
-		o.Writef("	copy(%s, b[n:n+int(l)])", name)
-		o.Writef("	n += int(l)")
+		if t.Len == 0 {
+			o.Writef("	l, x := binary.Uvarint(b[n:])")
+			o.Writef("	n += x")
+			o.Writef("	%s = make([]byte, l)", name)
+			o.Writef("	copy(%s, b[n:n+int(l)])", name)
+			o.Writef("	n += int(l)")
+		} else {
+			o.Writef("	copy(%s[:], b[n:n+%d])", name, t.Len)
+			o.Writef("	n += %d", t.Len)
+		}
 		o.Writef("}")
 	case parser.STRING:
 		o.Writef("{")

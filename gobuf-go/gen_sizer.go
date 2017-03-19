@@ -30,7 +30,7 @@ func genArraySizer(o *writer, name string, t *parser.Type, n int) bool {
 			}
 		} else {
 			if t.Len == 0 {
-				o.Writef("$name$_UvarintSize(uint64(len(%s)))", name)
+				o.Writef("size += $name$_UvarintSize(uint64(len(%s)))", name)
 			}
 			o.Writef("for i%d := 0; i%d < len(%s); i%d ++ {", n, n, name, n)
 			genSizer(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
@@ -49,7 +49,13 @@ func genMapSizer(o *writer, name string, t *parser.Type, n int) bool {
 			o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s) * (%d + %d)", name, name, keySize, elemSize)
 		} else {
 			o.Writef("size += $name$_UvarintSize(uint64(len(%s)))", name)
-			o.Writef("for key%d, val%d := range %s {", n, n, name)
+			if t.Key.Size() == 0 && t.Elem.Size() == 0 {
+				o.Writef("for key%d, val%d := range %s {", n, n, name)
+			} else if t.Key.Size() != 0 {
+				o.Writef("for _, val%d := range %s {", n, name)
+			} else if t.Elem.Size() != 0 {
+				o.Writef("for key%d, _ := range %s {", n, name)
+			}
 			genScalarSizer(o, fmt.Sprintf("key%d", n), t.Key)
 			genSizer(o, fmt.Sprintf("val%d", n), t.Elem, n+1)
 			o.Writef("}")
@@ -79,8 +85,13 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 		o.Writef("size += $name$_VarintSize(int64(%s))", name)
 	case parser.UINT:
 		o.Writef("size += $name$_UvarintSize(uint64(%s))", name)
-	case parser.BYTES, parser.STRING:
-		//TODO: Fix Length Support
+	case parser.BYTES:
+		if t.Len != 0 {
+			o.Writef("size += %d", t.Len)
+			return
+		}
+		fallthrough
+	case parser.STRING:
 		o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s)", name, name)
 	case parser.STRUCT:
 		if name[0] == '*' {
