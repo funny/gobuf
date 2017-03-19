@@ -21,16 +21,21 @@ func genUnmarshaler(o *writer, name string, t *parser.Type, n int) {
 
 func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.ARRAY {
-		o.Writef("{")
 		if t.Len == 0 {
+			o.Writef("{")
 			o.Writef("	%s = new %s((int)Gobuf.ReadUvarint(b, ref n));", name, typeName(t))
+			o.Writef("	for (var i%d = 0; i%d < %s.Capacity; i%d ++) {", n, n, name, n)
+			o.Writef("		%s v%d;", typeName(t.Elem), n)
+			genUnmarshaler(o, fmt.Sprintf("v%d", n), t.Elem, n+1)
+			o.Writef("		%s.Add(v%d);", name, n)
+			o.Writef("	}")
+			o.Writef("}")
+		} else {
+			o.Writef("	%s = new %s[%d];", name, typeName(t.Elem), t.Len)
+			o.Writef("	for (var i%d = 0; i%d < %d; i%d ++) {", n, n, t.Len, n)
+			genUnmarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
+			o.Writef("	}")
 		}
-		o.Writef("	for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
-		o.Writef("		%s v%d;", typeName(t.Elem), n)
-		genUnmarshaler(o, fmt.Sprintf("v%d", n), t.Elem, n+1)
-		o.Writef("		%s[i%d] = v%d;", name, n, n)
-		o.Writef("	}")
-		o.Writef("}")
 		return true
 	}
 	return false
@@ -39,13 +44,14 @@ func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 func genMapUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.MAP {
 		o.Writef("{")
-		o.Writef("	%s = new %s((int)Gobuf.ReadUvarint(b, ref n));", name, typeName(t))
-		o.Writef("	for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
+		o.Writef("	var cap%d = (int)Gobuf.ReadUvarint(b, ref n);", n)
+		o.Writef("	%s = new %s(cap%d);", name, typeName(t), n)
+		o.Writef("	for (var i%d = 0; i%d < cap%d; i%d ++) {", n, n, n, n)
 		o.Writef("		%s key%d;", typeName(t.Key), n)
 		o.Writef("		%s val%d;", typeName(t.Elem), n)
 		genScalarUnmarshaler(o, fmt.Sprintf("key%d", n), t.Key)
 		genUnmarshaler(o, fmt.Sprintf("val%d", n), t.Elem, n+1)
-		o.Writef("		%s[key%d] = val%d;", name, n, n)
+		o.Writef("		%s.Add(key%d, val%d);", name, n, n)
 		o.Writef("	}")
 		o.Writef("}")
 	}

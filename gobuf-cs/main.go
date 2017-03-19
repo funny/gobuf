@@ -30,9 +30,20 @@ func main() {
 		o.Writef("class %s {", s.Name)
 
 		for _, field := range s.Fields {
-			if field.Type.Kind == parser.ARRAY && field.Type.Len != 0 {
-				o.Writef("public %s %s = new List<%s>(%d);",
-					typeName(field.Type), field.Name, typeName(field.Type.Elem), field.Type.Len)
+			if field.Type.Kind == parser.ARRAY {
+				if field.Type.Len != 0 {
+					o.Writef("public %s %s = new %s[%d];",
+						typeName(field.Type), field.Name, typeName(field.Type.Elem), field.Type.Len)
+				} else {
+					o.Writef("public %s %s = new %s();",
+						typeName(field.Type), field.Name, typeName(field.Type))
+				}
+			} else if field.Type.Kind == parser.MAP {
+				o.Writef("public %s %s = new %s();",
+					typeName(field.Type), field.Name, typeName(field.Type))
+			} else if field.Type.Kind == parser.BYTES && field.Type.Len != 0 {
+				o.Writef("public %s %s = new byte[%d];",
+					typeName(field.Type), field.Name, field.Type.Len)
 			} else {
 				o.Writef("public %s %s;", typeName(field.Type), field.Name)
 			}
@@ -142,6 +153,9 @@ func typeName(t *parser.Type) string {
 		}
 		return fmt.Sprintf("Nullable<%s>", typeName(t.Elem))
 	case parser.ARRAY:
+		if t.Len != 0 {
+			return fmt.Sprintf("%s[]", typeName(t.Elem))
+		}
 		return fmt.Sprintf("List<%s>", typeName(t.Elem))
 	}
 	return ""
