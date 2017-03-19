@@ -4,6 +4,11 @@ import (
 	"math"
 	"testing"
 
+	"net"
+
+	"encoding/binary"
+	"io"
+
 	"github.com/funny/utest"
 )
 
@@ -264,4 +269,38 @@ func TestMessage(t *testing.T) {
 	check(msg1.ScalarPtr, msg2.ScalarPtr)
 	check(&msg1.ScalarArray[0], &msg2.ScalarArray[0])
 	check(msg1.ScalarMap[1], msg2.ScalarMap[1])
+}
+
+func Test_Communication(t *testing.T) {
+	lsn, err := net.Listen("tcp", ":12345")
+	utest.IsNilNow(t, err)
+
+	conn, err := lsn.Accept()
+	utest.IsNilNow(t, err)
+
+	head := make([]byte, 4)
+	_, err = io.ReadFull(conn, head)
+	utest.IsNilNow(t, err)
+
+	length := binary.LittleEndian.Uint32(head)
+
+	body := make([]byte, length)
+	_, err = io.ReadFull(conn, body)
+	utest.IsNilNow(t, err)
+
+	var msg1 Message
+	size := msg1.Unmarshal(body)
+	utest.EqualNow(t, length, size)
+
+	response := make([]byte, msg1.Size())
+	utest.EqualNow(t, length, len(response))
+
+	size = msg1.Marshal(response)
+	utest.EqualNow(t, length, size)
+
+	_, err = conn.Write(head)
+	utest.IsNilNow(t, err)
+
+	_, err = conn.Write(response)
+	utest.IsNilNow(t, err)
 }

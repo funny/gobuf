@@ -1,11 +1,33 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using Xunit;
 
 namespace example
 {
     public class UnitTest1
     {
+        delegate void CheckFunc(Scalar msg1, Scalar msg2);
+
+        CheckFunc check = (Scalar msg11, Scalar msg22) => {
+            Assert.Equal(msg11.Byte, msg22.Byte);
+            Assert.Equal(msg11.Int, msg22.Int);
+            Assert.Equal(msg11.Uint, msg22.Uint);
+            Assert.Equal(msg11.Int8, msg22.Int8);
+            Assert.Equal(msg11.Uint8, msg22.Uint8);
+            Assert.Equal(msg11.Int16, msg22.Int16);
+            Assert.Equal(msg11.Uint16, msg22.Uint16);
+            Assert.Equal(msg11.Int32, msg22.Int32);
+            Assert.Equal(msg11.Uint32, msg22.Uint32);
+            Assert.Equal(msg11.Int64, msg22.Int64);
+            Assert.Equal(msg11.Uint64, msg22.Uint64);
+            Assert.Equal(msg11.Float32, msg22.Float32);
+            Assert.Equal(msg11.Float64, msg22.Float64);
+            Assert.Equal(msg11.String, msg22.String);
+            Assert.Equal(msg11.Bytes, msg22.Bytes);
+            Assert.Equal(msg11.Bool, msg22.Bool);
+        };
+
         [Fact]
         public void TestScalar()
         {
@@ -40,22 +62,7 @@ namespace example
 
             Assert.Equal(size2, data.Length);
 
-            Assert.Equal(msg1.Byte, msg2.Byte);
-            Assert.Equal(msg1.Int, msg2.Int);
-            Assert.Equal(msg1.Uint, msg2.Uint);
-            Assert.Equal(msg1.Int8, msg2.Int8);
-            Assert.Equal(msg1.Uint8, msg2.Uint8);
-            Assert.Equal(msg1.Int16, msg2.Int16);
-            Assert.Equal(msg1.Uint16, msg2.Uint16);
-            Assert.Equal(msg1.Int32, msg2.Int32);
-            Assert.Equal(msg1.Uint32, msg2.Uint32);
-            Assert.Equal(msg1.Int64, msg2.Int64);
-            Assert.Equal(msg1.Uint64, msg2.Uint64);
-            Assert.Equal(msg1.Float32, msg2.Float32);
-            Assert.Equal(msg1.Float64, msg2.Float64);
-            Assert.Equal(msg1.String, msg2.String);
-            Assert.Equal(msg1.Bytes, msg2.Bytes);
-            Assert.Equal(msg1.Bool, msg2.Bool);
+            check(msg1, msg2);
         }
 
         [Fact]
@@ -250,8 +257,6 @@ namespace example
             Assert.Equal(msg1.BoolMap, msg2.BoolMap);
         }
 
-        delegate void CheckFunc(Scalar msg1, Scalar msg2);
-
         [Fact]
         public void TestMessage()
         {
@@ -292,25 +297,75 @@ namespace example
 
             Assert.Equal(size2, data.Length);
 
-            CheckFunc check = (Scalar msg11, Scalar msg22) => {
-                Assert.Equal(msg11.Byte, msg22.Byte);
-                Assert.Equal(msg11.Int, msg22.Int);
-                Assert.Equal(msg11.Uint, msg22.Uint);
-                Assert.Equal(msg11.Int8, msg22.Int8);
-                Assert.Equal(msg11.Uint8, msg22.Uint8);
-                Assert.Equal(msg11.Int16, msg22.Int16);
-                Assert.Equal(msg11.Uint16, msg22.Uint16);
-                Assert.Equal(msg11.Int32, msg22.Int32);
-                Assert.Equal(msg11.Uint32, msg22.Uint32);
-                Assert.Equal(msg11.Int64, msg22.Int64);
-                Assert.Equal(msg11.Uint64, msg22.Uint64);
-                Assert.Equal(msg11.Float32, msg22.Float32);
-                Assert.Equal(msg11.Float64, msg22.Float64);
-                Assert.Equal(msg11.String, msg22.String);
-                Assert.Equal(msg11.Bytes, msg22.Bytes);
-                Assert.Equal(msg11.Bool, msg22.Bool);
-            };
+            check(msg1.Scalar, msg2.Scalar);
+            check(msg1.ScalarPtr, msg2.ScalarPtr);
+            check(msg1.ScalarArray[0], msg2.ScalarArray[0]);
+            check(msg1.ScalarMap[1], msg2.ScalarMap[1]);
+        }
 
+        [Fact]
+        public void TestCommunication()
+        {
+            var scalar = new Scalar();
+
+            scalar.Byte = System.Byte.MaxValue;
+            scalar.Int = System.Int64.MaxValue;
+            scalar.Uint = System.UInt64.MaxValue;
+            scalar.Int8 = System.SByte.MaxValue;
+            scalar.Uint8 = System.Byte.MaxValue;
+            scalar.Int16 = System.Int16.MaxValue;
+            scalar.Uint16 = System.UInt16.MaxValue;
+            scalar.Int32 = System.Int32.MaxValue;
+            scalar.Uint32 = System.UInt32.MaxValue;
+            scalar.Int64 = System.Int64.MaxValue;
+            scalar.Uint64 = System.UInt64.MaxValue;
+            scalar.Float32 = System.Single.MaxValue;
+            scalar.Float64 = System.Double.MaxValue;
+            scalar.String =  "test string content";
+            scalar.Bytes = new byte[]{1,2,3,4};
+            scalar.Bool = true;
+
+            var msg1 = new Message();
+            msg1.Scalar = scalar;
+            msg1.ScalarPtr = scalar;
+            msg1.ScalarArray.Add(scalar);
+            msg1.ScalarMap.Add(1, scalar);
+
+            var body = new byte[msg1.Size()];
+            var size = msg1.Marshal(body, 0);
+            Assert.Equal(size, body.Length);
+
+            var head = new byte[4];
+            int offset = 0;
+            Gobuf.WriteUint32((uint)size, head, ref offset);
+
+            var conn = new TcpClient();
+            var task = conn.ConnectAsync("127.0.0.1", 12345);
+            task.Wait();
+            Assert.True(conn.Connected);
+            var stream = conn.GetStream();
+
+            stream.Write(head, 0, 4);
+            stream.Write(body, 0, body.Length);
+
+            offset = 0;
+            while (offset != 4) {
+                offset += stream.Read(head, offset, 4 - offset);
+            }
+
+            offset = 0;
+            size = (int)Gobuf.ReadUint32(head, ref offset);
+            Assert.Equal(size, body.Length);
+
+            offset = 0;
+            while (offset != body.Length) {
+                offset += stream.Read(body, offset, body.Length - offset);
+            }
+
+            var msg2 = new Message();
+            size = msg2.Unmarshal(body, 0);
+            Assert.Equal(size, body.Length);
+            
             check(msg1.Scalar, msg2.Scalar);
             check(msg1.ScalarPtr, msg2.ScalarPtr);
             check(msg1.ScalarArray[0], msg2.ScalarArray[0]);
