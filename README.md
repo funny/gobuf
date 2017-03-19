@@ -74,9 +74,9 @@ This is the type maping rule:
 | string | utf8 string |
 | []byte | byte[] |
 | []Type | List\<Type\> |
+| map[Scalar]Type | Dictionary\<Scalar, Type\> |
 | \*Scalar | Nullable\<Scalar\> |
 | \*Struct | Class |
-| map[Scalar]Type | Dictionary\<Scalar, Type\> |
 | Struct | Class |
 
 Wired Format
@@ -95,7 +95,7 @@ Wired Format
 | string | uint(utf8\_length) + utf8\_length |
 | []byte | uint(length) + length |
 | []Type | uint(count) + items |
+| map[Scalar]Type | uint(count) + items(key + value) |
 | \*Scalar | is_null ? uint8(0) : uint8(1) + element |
 | \*Struct | is_null ? uint8(0) : uint8(1) + fields |
-| map[Scalar]Type | uint(count) + items(key + value) |
 | Struct | fields |
