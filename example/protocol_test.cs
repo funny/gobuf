@@ -249,5 +249,72 @@ namespace example
             Assert.Equal(msg1.StringMap, msg2.StringMap);
             Assert.Equal(msg1.BoolMap, msg2.BoolMap);
         }
+
+        delegate void CheckFunc(Scalar msg1, Scalar msg2);
+
+        [Fact]
+        public void TestMessage()
+        {
+            var scalar = new Scalar();
+
+            scalar.Byte = System.Byte.MaxValue;
+            scalar.Int = System.Int64.MaxValue;
+            scalar.Uint = System.UInt64.MaxValue;
+            scalar.Int8 = System.SByte.MaxValue;
+            scalar.Uint8 = System.Byte.MaxValue;
+            scalar.Int16 = System.Int16.MaxValue;
+            scalar.Uint16 = System.UInt16.MaxValue;
+            scalar.Int32 = System.Int32.MaxValue;
+            scalar.Uint32 = System.UInt32.MaxValue;
+            scalar.Int64 = System.Int64.MaxValue;
+            scalar.Uint64 = System.UInt64.MaxValue;
+            scalar.Float32 = System.Single.MaxValue;
+            scalar.Float64 = System.Double.MaxValue;
+            scalar.String =  "test string content";
+            scalar.Bytes = new byte[]{1,2,3,4};
+            scalar.Bool = true;
+
+            var msg1 = new Message();
+            msg1.Scalar = scalar;
+            msg1.ScalarPtr = scalar;
+            msg1.ScalarArray.Add(scalar);
+            msg1.ScalarMap.Add(1, scalar);
+
+            var data = new byte[msg1.Size()];
+
+            var size1 = msg1.Marshal(data, 0);
+
+            Assert.Equal(size1, data.Length);
+
+            var msg2 = new Message();
+
+            var size2 = msg2.Unmarshal(data, 0);
+
+            Assert.Equal(size2, data.Length);
+
+            CheckFunc check = (Scalar msg11, Scalar msg22) => {
+                Assert.Equal(msg11.Byte, msg22.Byte);
+                Assert.Equal(msg11.Int, msg22.Int);
+                Assert.Equal(msg11.Uint, msg22.Uint);
+                Assert.Equal(msg11.Int8, msg22.Int8);
+                Assert.Equal(msg11.Uint8, msg22.Uint8);
+                Assert.Equal(msg11.Int16, msg22.Int16);
+                Assert.Equal(msg11.Uint16, msg22.Uint16);
+                Assert.Equal(msg11.Int32, msg22.Int32);
+                Assert.Equal(msg11.Uint32, msg22.Uint32);
+                Assert.Equal(msg11.Int64, msg22.Int64);
+                Assert.Equal(msg11.Uint64, msg22.Uint64);
+                Assert.Equal(msg11.Float32, msg22.Float32);
+                Assert.Equal(msg11.Float64, msg22.Float64);
+                Assert.Equal(msg11.String, msg22.String);
+                Assert.Equal(msg11.Bytes, msg22.Bytes);
+                Assert.Equal(msg11.Bool, msg22.Bool);
+            };
+
+            check(msg1.Scalar, msg2.Scalar);
+            check(msg1.ScalarPtr, msg2.ScalarPtr);
+            check(msg1.ScalarArray[0], msg2.ScalarArray[0]);
+            check(msg1.ScalarMap[1], msg2.ScalarMap[1]);
+        }
     }
 }
