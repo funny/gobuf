@@ -86,6 +86,7 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 	case parser.STRING:
 		o.Writef("size += Gobuf.StringSize(%s);", name)
 	case parser.BYTES:
+		//TODO: Fix Length Support
 		o.Writef("size += Gobuf.UvarintSize((ulong)%s.Length) + %s.Length;", name, name)
 	case parser.STRUCT:
 		o.Writef("size += %s.Size();", name)

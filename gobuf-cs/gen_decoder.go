@@ -26,7 +26,9 @@ func genArrayUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 			o.Writef("	%s = new %s((int)Gobuf.ReadUvarint(b, ref n));", name, typeName(t))
 		}
 		o.Writef("	for (var i%d = 0; i%d < %s.Count; i%d ++) {", n, n, name, n)
-		genUnmarshaler(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
+		o.Writef("		%s v%d;", typeName(t.Elem), n)
+		genUnmarshaler(o, fmt.Sprintf("v%d", n), t.Elem, n+1)
+		o.Writef("		%s[i%d] = v%d;", name, n, n)
 		o.Writef("	}")
 		o.Writef("}")
 		return true
@@ -54,6 +56,8 @@ func genPointerUnmarshaler(o *writer, name string, t *parser.Type, n int) bool {
 	if t.Kind == parser.POINTER {
 		o.Writef("if (b[n++] != 0) {")
 		genScalarUnmarshaler(o, name, t.Elem)
+		o.Writef("} else {")
+		o.Writef("	%s = null;", name)
 		o.Writef("}")
 		return true
 	}

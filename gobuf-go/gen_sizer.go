@@ -80,6 +80,7 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 	case parser.UINT:
 		o.Writef("size += $name$_UvarintSize(uint64(%s))", name)
 	case parser.BYTES, parser.STRING:
+		//TODO: Fix Length Support
 		o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s)", name, name)
 	case parser.STRUCT:
 		if name[0] == '*' {
