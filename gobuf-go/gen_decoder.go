@@ -92,10 +92,10 @@ func genScalarUnmarshaler(o *writer, name string, t *parser.Type) {
 		o.Writef("%s = %s(binary.LittleEndian.Uint64(b[n:]))", name, typeName(t))
 		o.Writef("n += 8")
 	case parser.FLOAT32:
-		o.Writef("%s = %s($name$_GetFloat32(b[n:]))", name, typeName(t))
+		o.Writef("%s = %s(gobuf.GetFloat32(b[n:]))", name, typeName(t))
 		o.Writef("n += 4")
 	case parser.FLOAT64:
-		o.Writef("%s = %s($name$_GetFloat64(b[n:]))", name, typeName(t))
+		o.Writef("%s = %s(gobuf.GetFloat64(b[n:]))", name, typeName(t))
 		o.Writef("n += 8")
 	case parser.INT:
 		o.Writef("{")

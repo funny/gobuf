@@ -10,8 +10,6 @@ import (
 	"github.com/funny/gobuf/parser"
 
 	"go/format"
-	"path"
-	"strings"
 )
 
 func main() {
@@ -23,16 +21,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var name = strings.TrimSuffix(path.Base(doc.File), path.Ext(doc.File))
-
 	var o writer
 
 	o.Writef("package %s", doc.Package)
 
-	o.Writef(`import "math"`)
 	o.Writef(`import "encoding/binary"`)
+	o.Writef(`import "github.com/funny/gobuf"`)
 
 	for _, s := range doc.Structs {
+		o.Writef("var _ gobuf.Struct = (*%s)(nil)", s.Name)
+
 		o.Writef("func (s *%s) Size() int {", s.Name)
 		o.Writef("var size int")
 		for _, field := range s.Fields {
@@ -58,42 +56,7 @@ func main() {
 		o.Writef("}\n")
 	}
 
-	o.WriteString(`
-func $name$_UvarintSize(x uint64) int {
-	i := 0
-	for x >= 0x80 {
-		x >>= 7
-		i++
-	}
-	return i + 1
-}
-
-func $name$_VarintSize(x int64) int {
-	ux := uint64(x) << 1
-	if x < 0 {
-		ux = ^ux
-	}
-	return $name$_UvarintSize(ux)
-}
-
-func $name$_GetFloat32(b []byte) float32 {
-	return math.Float32frombits(binary.LittleEndian.Uint32(b))
-}
-
-func $name$_PutFloat32(b []byte, v float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v))
-}
-
-func $name$_GetFloat64(b []byte) float64 {
-	return math.Float64frombits(binary.LittleEndian.Uint64(b))
-}
-
-func $name$_PutFloat64(b []byte, v float64) {
-	binary.LittleEndian.PutUint64(b, math.Float64bits(v))
-}
-`)
-
-	code := bytes.Replace(o.Bytes(), []byte("$name$"), []byte(name), -1)
+	code := o.Bytes()
 
 	source, err := format.Source(code)
 	if err != nil {

@@ -24,13 +24,13 @@ func genArraySizer(o *writer, name string, t *parser.Type, n int) bool {
 		elemSize := t.Elem.Size()
 		if elemSize != 0 {
 			if t.Len == 0 {
-				o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s) * %d", name, name, elemSize)
+				o.Writef("size += gobuf.UvarintSize(uint64(len(%s))) + len(%s) * %d", name, name, elemSize)
 			} else {
 				o.Writef("size += %d * %d", t.Len, elemSize)
 			}
 		} else {
 			if t.Len == 0 {
-				o.Writef("size += $name$_UvarintSize(uint64(len(%s)))", name)
+				o.Writef("size += gobuf.UvarintSize(uint64(len(%s)))", name)
 			}
 			o.Writef("for i%d := 0; i%d < len(%s); i%d ++ {", n, n, name, n)
 			genSizer(o, fmt.Sprintf("%s[i%d]", name, n), t.Elem, n+1)
@@ -46,9 +46,9 @@ func genMapSizer(o *writer, name string, t *parser.Type, n int) bool {
 		keySize := t.Key.Size()
 		elemSize := t.Elem.Size()
 		if keySize != 0 && elemSize != 0 {
-			o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s) * (%d + %d)", name, name, keySize, elemSize)
+			o.Writef("size += gobuf.UvarintSize(uint64(len(%s))) + len(%s) * (%d + %d)", name, name, keySize, elemSize)
 		} else {
-			o.Writef("size += $name$_UvarintSize(uint64(len(%s)))", name)
+			o.Writef("size += gobuf.UvarintSize(uint64(len(%s)))", name)
 			if t.Key.Size() == 0 && t.Elem.Size() == 0 {
 				o.Writef("for key%d, val%d := range %s {", n, n, name)
 			} else if t.Key.Size() != 0 {
@@ -82,9 +82,9 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 	}
 	switch t.Kind {
 	case parser.INT:
-		o.Writef("size += $name$_VarintSize(int64(%s))", name)
+		o.Writef("size += gobuf.VarintSize(int64(%s))", name)
 	case parser.UINT:
-		o.Writef("size += $name$_UvarintSize(uint64(%s))", name)
+		o.Writef("size += gobuf.UvarintSize(uint64(%s))", name)
 	case parser.BYTES:
 		if t.Len != 0 {
 			o.Writef("size += %d", t.Len)
@@ -92,7 +92,7 @@ func genScalarSizer(o *writer, name string, t *parser.Type) {
 		}
 		fallthrough
 	case parser.STRING:
-		o.Writef("size += $name$_UvarintSize(uint64(len(%s))) + len(%s)", name, name)
+		o.Writef("size += gobuf.UvarintSize(uint64(len(%s))) + len(%s)", name, name)
 	case parser.STRUCT:
 		if name[0] == '*' {
 			name = name[1:]

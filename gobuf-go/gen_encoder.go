@@ -79,10 +79,10 @@ func genScalarMarshaler(o *writer, name string, t *parser.Type) {
 		o.Writef("binary.LittleEndian.PutUint64(b[n:], uint64(%s))", name)
 		o.Writef("n += 8")
 	case parser.FLOAT32:
-		o.Writef("$name$_PutFloat32(b[n:], float32(%s))", name)
+		o.Writef("gobuf.PutFloat32(b[n:], float32(%s))", name)
 		o.Writef("n += 4")
 	case parser.FLOAT64:
-		o.Writef("$name$_PutFloat64(b[n:], float64(%s))", name)
+		o.Writef("gobuf.PutFloat64(b[n:], float64(%s))", name)
 		o.Writef("n += 8")
 	case parser.INT:
 		o.Writef("n += binary.PutVarint(b[n:], int64(%s))", name)
